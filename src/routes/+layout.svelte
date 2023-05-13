@@ -6,8 +6,24 @@
 	// Most of your app wide CSS should be put in this file
 	import '../app.postcss';
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-</script>
 
+	import { Modal, modalStore } from '@skeletonlabs/skeleton';
+	import type { ModalSettings, ModalComponent } from '@skeletonlabs/skeleton';
+	import AuthenticationForm from '$lib/components/AuthenticationForm.svelte';
+
+	function modalAuthComponentForm(): void {
+		const c: ModalComponent = { ref: AuthenticationForm };
+		const modal: ModalSettings = {
+			type: 'component',
+			component: c,
+			title: 'Authentication Required',
+			body: 'Complete the form below and then press submit.',
+			response: (r: any) => console.log('response:', r)
+		};
+		modalStore.trigger(modal);
+	}
+</script>
+<Modal />
 <!-- App Shell -->
 <AppShell>
 	<svelte:fragment slot="header">
@@ -25,14 +41,7 @@
 				>
 					Home
 				</a>
-				<a
-					class="btn btn-sm variant-soft-surface"
-					href="https://twitter.com/SkeletonUI"
-					target="_blank"
-					rel="noreferrer"
-				>
-					My Recipes
-				</a>
+				<button class="btn btn-sm variant-soft-surface" on:click={modalAuthComponentForm}>Form</button>
 				<a
 					class="btn btn-sm variant-soft-surface"
 					href="https://github.com/skeletonlabs/skeleton"

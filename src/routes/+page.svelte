@@ -1,5 +1,5 @@
 <!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
-<script>
+<script lang='ts'>
     import logo from '$lib/assets/logo.svg';
 </script>
 <div class="container h-full mx-auto flex justify-center items-center">
@@ -12,6 +12,7 @@
 		</figure>
 		<!-- / -->
 		<div class="flex justify-center space-x-2">
+			
 			<a
 				class="btn variant-filled"
 				href="https://skeleton.dev/"
@@ -33,7 +34,6 @@
 	figure {
 		@apply flex relative flex-col;
 	}
-	figure svg,
 	.img-bg {
 		@apply w-64 h-64 md:w-80 md:h-80;
 	}
