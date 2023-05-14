@@ -3,14 +3,13 @@
 	import { InputChip, Paginator } from '@skeletonlabs/skeleton';
 	import FoodCard from '$lib/components/FoodCard.svelte';
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
-	import { invalidate } from '$app/navigation';
-	import { Toast, toastStore } from '@skeletonlabs/skeleton';
+	import { toastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	import Icon from 'svelte-awesome';
 	import spinner from 'svelte-awesome/icons/spinner';
 	import search from 'svelte-awesome/icons/search';
 
-	let recipes: object[] = [];
+	let recipes: App.Recipe[] = [];
 	let list: string[] = [];
 	let loading: boolean = false;
 
@@ -91,7 +90,7 @@
 	{#if recipes.length}
 		<div class="mx-10 mt-10 w-full text-token grid grid-cols-1 lg:grid-cols-4 gap-8">
 			{#each paginatedRecipes as recipe}
-				<FoodCard {recipe} />
+				<FoodCard recipe={recipe} />
 			{/each}
 		</div>
 		<Paginator bind:settings={paginatorSettings} class="mt-10" />

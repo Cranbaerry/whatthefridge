@@ -1,33 +1,7 @@
 <script lang="ts">
-	type Ingredient = {
-		aisle: string;
-		amount: number;
-		id: number;
-		image: string;
-		meta: object[];
-		name: string;
-		original: string;
-		originalName: string;
-		unit: string;
-		unitLong: string;
-		unitShort: string;
-	};
-
-	type Recipe = {
-		id: number;
-		image: string;
-		imageType: string;
-		likes: number;
-		missedIngredientCount: number;
-		missedIngredients: Ingredient[];
-		title: string;
-		unusedIngredients: Ingredient[];
-		usedIngredientCount: number;
-	};
-
 	import Icon from 'svelte-awesome';
 	import heart from 'svelte-awesome/icons/heart';
-	export let recipe: Recipe;
+	export let recipe: App.Recipe;
 </script>
 
 <a class="relative card card-hover overflow-hidden variant-soft" href="/elements/cards">
@@ -59,11 +33,3 @@
 		</div>
 	</footer>
 </a>
-
-<style lang="postcss">
-	.recipe-title {
-		text-shadow: 1px 1px #000000;
-		-webkit-text-stroke-width: 0.1px;
-		-webkit-text-stroke-color: #1a1a1a;
-	}
-</style>

@@ -19,6 +19,32 @@ declare global {
 		interface Recipe {
 			recipeName: null;
 		}
+
+		interface Ingredient {
+			aisle: string;
+			amount: number;
+			id: number;
+			image: string;
+			meta: object[];
+			name: string;
+			original: string;
+			originalName: string;
+			unit: string;
+			unitLong: string;
+			unitShort: string;
+		};
+	
+		interface Recipe {
+			id: number;
+			image: string;
+			imageType: string;
+			likes: number;
+			missedIngredientCount: number;
+			missedIngredients: Ingredient[];
+			title: string;
+			unusedIngredients: Ingredient[];
+			usedIngredientCount: number;
+		};
 		// interface Locals {}
 		// interface PageData {}
 		// interface Error {}
