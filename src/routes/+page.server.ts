@@ -1,6 +1,7 @@
 import { AuthApiError } from '@supabase/supabase-js';
 import { fail, redirect, type ActionFailure } from '@sveltejs/kit';
 import type { Actions } from './$types';
+import { PRIVATE_SPOONACULAR_KEY } from '$env/static/private'
 
 export const actions: Actions = {
 	async login({
@@ -8,7 +9,6 @@ export const actions: Actions = {
 		locals: { supabase }
 	}): Promise<ActionFailure<{ error: string; values?: { email: string } }> | { message: string; login: boolean }> {
 		const formData = await request.formData();
-
 		const email = formData.get('email') as string;
 		const password = formData.get('password') as string;
 
@@ -57,7 +57,6 @@ export const actions: Actions = {
 		locals: { supabase }
 	}): Promise<ActionFailure<{ error: string; values?: { email: string } }> | { message: string; login: boolean }> {
 		const formData = await request.formData();
-
 		const email = formData.get('email') as string;
 		const password = formData.get('password') as string;
 
@@ -99,14 +98,14 @@ export const actions: Actions = {
 			});
 		}
 
-		if(data?.user?.identities?.length === 0){
+		if (data?.user?.identities?.length === 0) {
 			return fail(400, {
 				error: 'This user already exists!',
 				values: {
 					email
 				}
 			});
-	   }
+		}
 
 		return {
 			message: 'Please check your email for a magic link to log into the website.',
@@ -117,5 +116,20 @@ export const actions: Actions = {
 	async logout({ locals: { supabase } }) {
 		await supabase.auth.signOut();
 		throw redirect(303, '/');
-	}
+	},
+
+	async fetchRecipes({
+		request,
+		url,
+		locals: { supabase }
+	}): Promise<ActionFailure<{ error: string }> | { recipes: JSON }> {
+		const formData = await request.formData();
+		const ingredients = (formData.getAll('ingredients') as string[]).join(',');
+		const response = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=30&ranking=2&ignorePantry=true&apiKey=${PRIVATE_SPOONACULAR_KEY}`)
+		
+		return {
+			recipes: await response.json(),
+		};
+	},
+
 };

@@ -26,7 +26,7 @@
 
 	const handleSubmit: SubmitFunction = () => {
 		form.loading = true;
-		return async ({ result, update }) => {
+		return async ({ result }) => {
 			console.log(result);
 			if (result.type === 'failure') {
 				form.error = result.data?.error;

@@ -9,16 +9,21 @@ import type { Database } from './DatabaseDefinitions';
 declare global {
 	declare namespace App {
 		interface Locals {
-			supabase: SupabaseClient<Database>
-			getSession(): Promise<Session | null>
-			dbType: Database
-		  }
-		  interface PageData {
-			session: Session | null
-		  }
+			supabase: SupabaseClient<Database>;
+			getSession(): Promise<Session | null>;
+			dbType: Database;
+		}
+		interface PageData {
+			session: Session | null;
+		}
+		interface Recipe {
+			recipeName: null;
+		}
 		// interface Locals {}
 		// interface PageData {}
 		// interface Error {}
 		// interface Platform {}
 	}
 }
+
+export {};

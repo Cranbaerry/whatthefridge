@@ -29,14 +29,14 @@
 		modalStore.trigger(modal);
 	}
 
-	let loading = false
+	let loading:boolean = false
 	const handleLogout: SubmitFunction = () => {
 		loading = true;
 		return async ({ result }) => {
 			if (result.type === 'redirect') {
 				const t: ToastSettings = {
 					message: 'You have been logged out. See you soon!',
-					background: 'variant-soft-error',
+					background: 'variant-soft-secondary',
 				};
 				
 				await invalidate('supabase:auth');
