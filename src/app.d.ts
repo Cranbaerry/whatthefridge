@@ -44,6 +44,7 @@ declare global {
 			title: string;
 			unusedIngredients: Ingredient[];
 			usedIngredientCount: number;
+			bookmarked: boolean | null;
 		};
 		// interface Locals {}
 		// interface PageData {}

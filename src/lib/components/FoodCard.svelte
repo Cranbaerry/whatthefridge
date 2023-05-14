@@ -2,9 +2,26 @@
 	import Icon from 'svelte-awesome';
 	import heart from 'svelte-awesome/icons/heart';
 	export let recipe: App.Recipe;
+	let heartStyle: string;
+	let loading: boolean = false;
+
+	const toggleFav = () => {
+		// recipe.likes += recipe.isFav ? -1 : 1;
+		loading = true;		
+		console.log('recipe id', recipe.id);
+		console.log('before', recipe.bookmarked);
+		recipe.bookmarked = !recipe.bookmarked;
+		console.log('recipe.bookmarked', recipe.bookmarked);
+		const fillRed = recipe.bookmarked ? '!fill-red-500' : '';
+		heartStyle = `${fillRed} animate-bounce`;
+		setTimeout(() => {
+			heartStyle = fillRed;
+			loading = false;
+		}, 1000);
+	};
 </script>
 
-<a class="relative card card-hover overflow-hidden variant-soft" href="/elements/cards">
+<a class="relative card card-hover overflow-hidden variant-soft" href="#">
 	<header>
 		<img
 			src={recipe.image}
@@ -27,9 +44,15 @@
 		</h4>
 	</div>
 	<footer class="p-4 flex justify-start items-center space-x-4 absolute top-0 right-0">
-		<div class="flex-auto flex justify-between items-center badge variant-filled-primary">
-			<Icon data={heart} class="mr-2" />
-			{recipe.likes}
+		<div class="flex-auto flex justify-between items-center">
+			<button type="button" class="btn btn-sm  badge variant-filled-surface" on:click={toggleFav}>
+				{#if recipe.bookmarked}				
+				<span><Icon data={heart} class="{heartStyle}" /></span>
+				{:else}
+				<span><Icon data={heart} class="{heartStyle}" /></span>
+				{/if}				
+				<span>{recipe.likes}</span>
+			</button>
 		</div>
 	</footer>
 </a>
