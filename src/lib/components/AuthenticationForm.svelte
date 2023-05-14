@@ -6,13 +6,15 @@
 	// Imports
 	import { modalStore, TabGroup, Tab } from '@skeletonlabs/skeleton';
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
-	import type { ActionData } from './$types';
 	import { onMount } from 'svelte';
 	import Icon from 'svelte-awesome';
 	import warning from 'svelte-awesome/icons/warning';
 	import check from 'svelte-awesome/icons/check';
 	import { invalidate } from '$app/navigation';
-	
+	import { toastStore } from '@skeletonlabs/skeleton';
+	import type { ToastSettings } from '@skeletonlabs/skeleton';
+	import { page } from '$app/stores';
+
 	let tabSet: number = 0;
 	const form: { email: string, password: string, loading: boolean, error: string | null, success: string | null } = {
 		email: "",
@@ -31,15 +33,21 @@
 			}
 
 			if (result.type === 'success') {
-				form.success = result.data?.message;
-			}
+				if (result.data?.login) {
+					await invalidate('supabase:auth');
+					parent.onClose();
 
-			if (result.type === 'redirect') {
-				await invalidate('supabase:auth');
-				parent.onClose();
+					const t: ToastSettings = {
+						message: 'Welcome back, ' + $page.data.session?.user.email + '!',
+						background: 'variant-soft-success',
+					};
+					toastStore.trigger(t);
+				} else {
+					form.success = result.data?.message;
+				}
 			}
 		
-			// await applyAction(result);
+			await applyAction(result);
 			form.loading = false;
 		};
 	};

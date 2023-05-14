@@ -10,7 +10,13 @@
 	import { Modal, modalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ModalComponent } from '@skeletonlabs/skeleton';
 	import AuthenticationForm from '$lib/components/AuthenticationForm.svelte';
+	import { page } from '$app/stores';
+	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
+	import { invalidate } from '$app/navigation';
 
+	import { Toast, toastStore } from '@skeletonlabs/skeleton';
+	import type { ToastSettings } from '@skeletonlabs/skeleton';
+	
 	function modalAuthComponentForm(): void {
 		const c: ModalComponent = { ref: AuthenticationForm };
 		const modal: ModalSettings = {
@@ -22,8 +28,28 @@
 		};
 		modalStore.trigger(modal);
 	}
+
+	let loading = false
+	const handleLogout: SubmitFunction = () => {
+		loading = true;
+		return async ({ result }) => {
+			if (result.type === 'redirect') {
+				const t: ToastSettings = {
+					message: 'You have been logged out. See you soon!',
+					background: 'variant-soft-error',
+				};
+				
+				await invalidate('supabase:auth');
+				toastStore.trigger(t);
+			} else {
+				await applyAction(result);
+			}
+			loading = false;
+		};
+	};
 </script>
 <Modal />
+<Toast />
 <!-- App Shell -->
 <AppShell>
 	<svelte:fragment slot="header">
@@ -35,21 +61,25 @@
 			<svelte:fragment slot="trail">
 				<a
 					class="btn btn-sm variant-soft-surface"
-					href="https://discord.gg/EXqV7W8MtY"
-					target="_blank"
+					href="/"
 					rel="noreferrer"
 				>
 					Home
 				</a>
-				<button class="btn btn-sm variant-soft-surface" on:click={modalAuthComponentForm}>Form</button>
+				<button class="btn btn-sm variant-soft-surface" on:click={modalAuthComponentForm}>My Recipes</button>
 				<a
 					class="btn btn-sm variant-soft-surface"
-					href="https://github.com/skeletonlabs/skeleton"
+					href="/about"
 					target="_blank"
 					rel="noreferrer"
 				>
 					About
 				</a>
+				{#if $page.data.session}
+				<form action="?/logout" method="post" use:enhance={handleLogout}>
+					<button class="btn btn-sm variant-soft-surface" disabled={loading} type="submit">Sign out</button>
+				</form>
+				{/if}
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>

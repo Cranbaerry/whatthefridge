@@ -1,10 +1,16 @@
 <!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
 <script lang='ts'>
     import logo from '$lib/assets/logo.svg';
+	import { page } from '$app/stores';
+
 </script>
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
-		<h2 class="h2 font-bold">Welcome to Skeleton.</h2>
+		{#if $page.data.session}
+			<h2 class="h2 font-bold">Welcome, {$page.data.session.user.email}</h2>
+		{:else}
+			<h2 class="h2 font-bold">Welcome, Guest</h2>
+		{/if}
 		<!-- Animated Logo -->
 		<figure>
 			<section class="img-bg" />

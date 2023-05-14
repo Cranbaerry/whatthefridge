@@ -6,7 +6,7 @@ export const actions: Actions = {
 	async login({
 		request,
 		locals: { supabase }
-	}): Promise<ActionFailure<{ error: string; values?: { email: string } }>> {
+	}): Promise<ActionFailure<{ error: string; values?: { email: string } }> | { message: string; login: boolean }> {
 		const formData = await request.formData();
 
 		const email = formData.get('email') as string;
@@ -45,14 +45,17 @@ export const actions: Actions = {
 			});
 		}
 
-		throw redirect(303, '/dashboard');
+		return {
+			message: 'Logged in.',
+			login: true,
+		};
 	},
 
 	async register({
 		request,
 		url,
 		locals: { supabase }
-	}): Promise<ActionFailure<{ error: string; values?: { email: string } }> | { message: string }> {
+	}): Promise<ActionFailure<{ error: string; values?: { email: string } }> | { message: string; login: boolean }> {
 		const formData = await request.formData();
 
 		const email = formData.get('email') as string;
@@ -72,7 +75,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const { error } = await supabase.auth.signUp({
+		const { error, data } = await supabase.auth.signUp({
 			email,
 			password,
 			options: { emailRedirectTo: url.origin }
@@ -96,8 +99,23 @@ export const actions: Actions = {
 			});
 		}
 
+		if(data?.user?.identities?.length === 0){
+			return fail(400, {
+				error: 'This user already exists!',
+				values: {
+					email
+				}
+			});
+	   }
+
 		return {
-			message: 'Please check your email for a magic link to log into the website.'
+			message: 'Please check your email for a magic link to log into the website.',
+			login: false,
 		};
+	},
+
+	async logout({ locals: { supabase } }) {
+		await supabase.auth.signOut();
+		throw redirect(303, '/');
 	}
 };
