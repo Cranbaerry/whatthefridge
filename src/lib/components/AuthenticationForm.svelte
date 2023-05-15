@@ -39,7 +39,7 @@
 
 					const t: ToastSettings = {
 						message: 'Welcome back, ' + $page.data.session?.user.email + '!',
-						background: 'variant-soft-success',
+						background: 'variant-filled-success',
 					};
 					toastStore.trigger(t);
 				} else {

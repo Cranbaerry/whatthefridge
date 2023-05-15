@@ -132,4 +132,17 @@ export const actions: Actions = {
 		};
 	},
 
+	async fetchRecipeDetail({
+		request,
+		url,
+		locals: { supabase }
+	}): Promise<ActionFailure<{ error: string }> | { recipes: JSON }> {
+		const formData = await request.formData();
+		const ingredients = (formData.getAll('ingredients') as string[]).join(',');
+		const response = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=30&ranking=2&ignorePantry=true&apiKey=${PRIVATE_SPOONACULAR_KEY}`)
+		
+		return {
+			recipes: await response.json(),
+		};
+	},
 };

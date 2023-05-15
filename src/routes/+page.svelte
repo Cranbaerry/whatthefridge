@@ -9,6 +9,7 @@
 	import spinner from 'svelte-awesome/icons/spinner';
 	import search from 'svelte-awesome/icons/search';
 
+
 	let recipes: App.Recipe[] = [];
 	let list: string[] = [];
 	let loading: boolean = false;
@@ -29,13 +30,13 @@
 		loading = true;
 		return async ({ result }) => {
 			console.log(result);
+			let t: ToastSettings;
 			if (result.type === 'success') {
-				recipes = result.data?.recipes;
-				let t: ToastSettings;
+				recipes = result.data?.recipes;				
 				if (recipes.length === 0) {
 					t = {
 						message: `Sorry, we couldn't find any recipes with those ingredients.. 😢`,
-						background: 'variant-soft-error'
+						background: 'variant-filled-error'
 					};
 				} else {
 					t = {
@@ -46,10 +47,17 @@
 
 				await applyAction(result);
 				toastStore.trigger(t);
-				loading = false;
-			}
+			} else if (result.type === 'error') {
+				t = {
+					message: `Internal Server Error. Please try again later.`,
+					background: 'variant-filled-error'
+				};
+				toastStore.trigger(t);
+			}			
+			loading = false;
 		};
 	};
+
 </script>
 
 <div class="container h-full mx-auto py-10 px-5 flex flex-col justify-center items-center">
@@ -72,9 +80,9 @@
 			<div class="flex justify-center space-x-2 mt-7">
 				<button class="btn variant-filled" disabled={loading} type="submit">
 					{#if loading}
-					<span><Icon data={spinner} pulse /></span>
+						<span><Icon data={spinner} pulse /></span>
 					{:else}
-					<span><Icon data={search}/></span>
+						<span><Icon data={search} /></span>
 					{/if}
 					<span>Fridge it!</span>
 				</button>
@@ -85,9 +93,9 @@
 	{#if recipes.length}
 		<div class="mx-10 mt-10 w-full text-token grid grid-cols-1 lg:grid-cols-4 gap-8">
 			{#each paginatedRecipes as recipe}
-			{#key recipe}
-			<FoodCard recipe={recipe} />
-			{/key}				
+				{#key recipe}
+					<FoodCard {recipe} />
+				{/key}
 			{/each}
 		</div>
 		<Paginator bind:settings={paginatorSettings} class="mt-10" />

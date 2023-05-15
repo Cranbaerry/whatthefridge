@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
 	// The ordering of these imports is critical to your app working properly
 	import '@skeletonlabs/skeleton/themes/theme-modern.css';
 	// If you have source.organizeImports set to true in VSCode, then it will auto change this ordering
@@ -17,6 +17,7 @@
 
 	import { Toast, toastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
+	import { Drawer, drawerStore } from '@skeletonlabs/skeleton';
 	
 	function showModalAuth(): void {
 		const c: ModalComponent = { ref: AuthenticationForm };
@@ -26,21 +27,21 @@
 			title: 'Authentication Required',
 			body: 'Complete the form below and then press submit.',
 			response: (r: any) => console.log('response:', r),
-			meta: { tabSet: 0 },
+			meta: { tabSet: 0 }
 		};
 		modalStore.trigger(modal);
 	}
 
-	let loading:boolean = false
+	let loading: boolean = false;
 	const handleLogout: SubmitFunction = () => {
 		loading = true;
 		return async ({ result }) => {
 			if (result.type === 'redirect') {
 				const t: ToastSettings = {
 					message: 'You have been logged out. See you soon!',
-					background: 'variant-soft-secondary',
+					background: 'variant-filled-secondary'
 				};
-				
+
 				await invalidate('supabase:auth');
 				toastStore.trigger(t);
 			} else {
@@ -52,37 +53,40 @@
 
 	setContext('authentication', { showModalAuth });
 </script>
+
 <Modal />
 <Toast />
+<Drawer>
+	{#if $drawerStore.id === 'recipe'}
+		<div class="w-full h-full flex justify-center items-center">
+			<div class="text-center space-y-2">
+				{#if $drawerStore.meta}<h2 class="h2">{$drawerStore.meta}</h2>{/if}
+				<h4 class="h4">Drawer: <span class="capitalize">{$drawerStore.position}</span></h4>
+				<span class="block">Tap outside the drawer to close.</span>
+			</div>
+		</div>
+	{/if}
+</Drawer>
 <!-- App Shell -->
 <AppShell>
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
 		<AppBar>
-			<svelte:fragment slot="lead">	
+			<svelte:fragment slot="lead">
 				<strong class="text-xl uppercase">Whatthefridge</strong>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
-				<a
-					class="btn btn-sm variant-soft-surface"
-					href="/"
-					rel="noreferrer"
-				>
-					Home
-				</a>
+				<a class="btn btn-sm variant-soft-surface" href="/" rel="noreferrer"> Home </a>
 				<button class="btn btn-sm variant-soft-surface" on:click={showModalAuth}>My Recipes</button>
-				<a
-					class="btn btn-sm variant-soft-surface"
-					href="/about"
-					target="_blank"
-					rel="noreferrer"
-				>
+				<a class="btn btn-sm variant-soft-surface" href="/about" target="_blank" rel="noreferrer">
 					About
 				</a>
 				{#if $page.data.session}
-				<form action="?/logout" method="post" use:enhance={handleLogout}>
-					<button class="btn btn-sm variant-soft-surface" disabled={loading} type="submit">Sign out</button>
-				</form>
+					<form action="?/logout" method="post" use:enhance={handleLogout}>
+						<button class="btn btn-sm variant-soft-surface" disabled={loading} type="submit"
+							>Sign out</button
+						>
+					</form>
 				{/if}
 			</svelte:fragment>
 		</AppBar>
