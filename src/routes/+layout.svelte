@@ -27,6 +27,9 @@
 	import clock from 'svelte-awesome/icons/clockO';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import book from 'svelte-awesome/icons/book';
+	import github from 'svelte-awesome/icons/github';
+
+
 	function showModalAuth(): void {
 		const c: ModalComponent = { ref: AuthenticationForm };
 		const modal: ModalSettings = {
@@ -217,4 +220,13 @@
 	</svelte:fragment>
 	<!-- Page Route Content -->
 	<slot />
+
+	<svelte:fragment slot="pageFooter">
+		<footer class="text-center p-5">
+			<p>Made with ❤️ in BINUS.</p>
+			<p>Powered by <a href="https://www.skeleton.dev/" target="_blank" class="!no-underline !text-secondary-900">Skeleton</a> and <a href="https://supabase.com/" target="_blank" class="!no-underline !text-secondary-900">Supabase</a>.</p>
+
+		</footer>
+		
+	</svelte:fragment>
 </AppShell>
