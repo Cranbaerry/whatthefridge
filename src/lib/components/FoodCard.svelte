@@ -94,8 +94,8 @@
 			/>
 		</header>
 
-		<div class="p-4 space-y-4 h-20 max-h-20">
-			<h4 class="h3 text-center" data-toc-ignore>
+		<div class="p-4 space-y-4 h-full">
+			<h4 class="h3 text-center truncate" data-toc-ignore>
 				{recipe.title}
 			</h4>
 		</div>
