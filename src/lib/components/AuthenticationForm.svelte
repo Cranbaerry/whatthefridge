@@ -15,7 +15,7 @@
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	import { page } from '$app/stores';
 
-	let tabSet: number = 0;
+	let tabSet: number = $modalStore[0].meta.tabSet ?? 0;
 	const form: { email: string, password: string, loading: boolean, error: string | null, success: string | null } = {
 		email: "",
 		password: "",

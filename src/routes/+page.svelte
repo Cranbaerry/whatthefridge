@@ -52,13 +52,8 @@
 	};
 </script>
 
-<div class="container h-full mx-auto py-5 flex flex-col justify-center items-center">
+<div class="container h-full mx-auto py-10 px-5 flex flex-col justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
-		<!-- {#if $page.data.session}
-			<h2 class="h2 font-bold">Welcome, {$page.data.session.user.email}</h2>
-		{:else}
-			<h2 class="h2 font-bold">Welcome, Guest</h2>
-		{/if} -->
 		<!-- Animated Logo -->
 		<figure>
 			<section class="img-bg" />

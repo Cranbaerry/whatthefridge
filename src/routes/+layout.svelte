@@ -13,18 +13,20 @@
 	import { page } from '$app/stores';
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
 	import { invalidate } from '$app/navigation';
+	import { setContext } from 'svelte';
 
 	import { Toast, toastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	
-	function modalAuthComponentForm(): void {
+	function showModalAuth(): void {
 		const c: ModalComponent = { ref: AuthenticationForm };
 		const modal: ModalSettings = {
 			type: 'component',
 			component: c,
 			title: 'Authentication Required',
 			body: 'Complete the form below and then press submit.',
-			response: (r: any) => console.log('response:', r)
+			response: (r: any) => console.log('response:', r),
+			meta: { tabSet: 0 },
 		};
 		modalStore.trigger(modal);
 	}
@@ -47,6 +49,8 @@
 			loading = false;
 		};
 	};
+
+	setContext('authentication', { showModalAuth });
 </script>
 <Modal />
 <Toast />
@@ -66,7 +70,7 @@
 				>
 					Home
 				</a>
-				<button class="btn btn-sm variant-soft-surface" on:click={modalAuthComponentForm}>My Recipes</button>
+				<button class="btn btn-sm variant-soft-surface" on:click={showModalAuth}>My Recipes</button>
 				<a
 					class="btn btn-sm variant-soft-surface"
 					href="/about"
