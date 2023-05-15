@@ -12,6 +12,7 @@
 	import { toastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	const { showModalAuth } = getContext('authentication');
+	const { removePlaceholder } = getContext('placeholder');
 
 	const toggleFav = () => {
 		if (!$page.data.session) {
@@ -28,44 +29,32 @@
 		}, 500);
 	};
 
-	const imageLoaded = (e: any) => {
-		const placeholder = e.target.parentElement;
-		placeholder.removeAttribute('data-placeholder');
-		console.log('loaded', e.target);
-	};
-
 	const handleRecipeDetail: SubmitFunction = () => {
 		loading = true;
 		return async ({ result }) => {
-			console.log(result);
 			let t: ToastSettings;
 			if (result.type === 'success') {
-				// recipes = result.data?.recipes;
-				// if (recipes.length === 0) {
-				// 	t = {
-				// 		message: `Sorry, we couldn't find any recipes with those ingredients.. 😢`,
-				// 		background: 'variant-filled-error'
-				// 	};
-				// } else {
-				// 	t = {
-				// 		message: `We have found ${recipes.length} recipes for you to try! 😋`,
-				// 		background: 'variant-filled-tertiary'
-				// 	};
-				// }
+				// Strip HTML tags from summary
+				let recipeDetail = result.data?.detail;
+				recipeDetail.summary = recipeDetail.summary.replace(/<\/?[^>]+(>|$)/g, '');
 
-				// await applyAction(result);
-				// toastStore.trigger(t);
 				const drawerSettings: DrawerSettings = {
 					id: 'recipe',
 					// Provide your property overrides:
 					// bgDrawer: 'bg-purple-900 text-white',
 					// bgBackdrop: 'bg-gradient-to-tr from-indigo-500/50 via-purple-500/50 to-pink-500/50',
-					width: 'w-[280px] md:w-[480px]',
+					width: 'w-[280px] md:w-[550px]',
 					// padding: 'p-4',
 					// rounded: 'rounded-xl',
-					meta: 'Styled Drawer'
-				};
+					meta: {
+						recipeDetail: recipeDetail,
+						recipeEquipments: result.data?.equipments,
+						recipeInstructions: result.data?.instructions
+					}
+				};				
 				drawerStore.open(drawerSettings);
+
+				console.log('recipeInstructions', result.data?.instructions)
 			} else if (result.type === 'error') {
 				t = {
 					message: `Internal Server Error. Please try again later.`,
@@ -88,9 +77,9 @@
 		>
 			<img
 				src={recipe.image}
-				class="object-fit w-full h-full"
+				class="object-cover w-full h-full"
 				alt={recipe.title}
-				on:load={imageLoaded}
+				on:load={removePlaceholder}
 			/>
 		</header>
 

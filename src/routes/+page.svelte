@@ -10,7 +10,7 @@
 	import search from 'svelte-awesome/icons/search';
 
 	let recipes: App.Recipe[] = [];
-	let list: string[] = [];
+	let list: string[] = ['apple'];
 	let loading: boolean = false;
 
 	$: recipesCount = recipes.length;
@@ -48,7 +48,13 @@
 				toastStore.trigger(t);
 			} else if (result.type === 'error') {
 				t = {
-					message: `Internal Server Error. Please try again later.`,
+					message: `Something went wrong. Please try again later.`,
+					background: 'variant-filled-error'
+				};
+				toastStore.trigger(t);
+			} else if (result.type === 'failure') {
+				t = {
+					message: result.data?.error,
 					background: 'variant-filled-error'
 				};
 				toastStore.trigger(t);

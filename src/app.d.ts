@@ -4,18 +4,19 @@
 
 import { SupabaseClient, Session } from '@supabase/supabase-js'
 import { Database } from './DatabaseDefinitions'
-import type { Database } from './DatabaseDefinitions';
 
 declare global {
 	declare namespace App {
 		interface Locals {
 			supabase: SupabaseClient<Database>;
 			getSession(): Promise<Session | null>;
-			dbType: Database;
+			database: Database;
 		}
+
 		interface PageData {
 			session: Session | null;
 		}
+
 		interface Recipe {
 			recipeName: null;
 		}
@@ -33,7 +34,7 @@ declare global {
 			unitLong: string;
 			unitShort: string;
 		};
-	
+
 		interface Recipe {
 			id: number;
 			image: string;
@@ -46,11 +47,116 @@ declare global {
 			usedIngredientCount: number;
 			bookmarked: boolean | null;
 		};
-		// interface Locals {}
-		// interface PageData {}
-		// interface Error {}
-		// interface Platform {}
+
+		interface RecipeDetail {
+			vegetarian: boolean
+			vegan: boolean
+			glutenFree: boolean
+			dairyFree: boolean
+			veryHealthy: boolean
+			cheap: boolean
+			veryPopular: boolean
+			sustainable: boolean
+			lowFodmap: boolean
+			weightWatcherSmartPoints: number
+			gaps: string
+			preparationMinutes: number
+			cookingMinutes: number
+			aggregateLikes: number
+			healthScore: number
+			creditsText: string
+			sourceName: string
+			pricePerServing: number
+			extendedIngredients: ExtendedIngredient[]
+			id: number
+			title: string
+			readyInMinutes: number
+			servings: number
+			sourceUrl: string
+			image: string
+			imageType: string
+			summary: string
+			cuisines: any[]
+			dishTypes: string[]
+			diets: string[]
+			occasions: any[]
+			winePairing: WinePairing
+			instructions: any
+			analyzedInstructions: any[]
+			originalId: any
+			spoonacularSourceUrl: string
+		}
+
+		interface ExtendedIngredient {
+			id: number
+			aisle: string
+			image: string
+			consistency: string
+			name: string
+			nameClean: string
+			original: string
+			originalName: string
+			amount: number
+			unit: string
+			meta: string[]
+			measures: Measures
+		}
+
+		interface Measures {
+			us: USMetric
+			metric: Metric
+		}
+
+		interface USMetric {
+			amount: number
+			unitShort: string
+			unitLong: string
+		}
+
+		interface Metric {
+			amount: number
+			unitShort: string
+			unitLong: string
+		}
+
+		interface WinePairing {
+			pairedWines: string[]
+			pairingText: string
+			productMatches: ProductMatch[]
+		}
+
+		interface ProductMatch {
+			id: number
+			title: string
+			description: string
+			price: string
+			imageUrl: string
+			averageRating: number
+			ratingCount: number
+			score: number
+			link: string
+		}
+
+		interface InstructionStep {
+			number: number
+			step: string
+			ingredients: any[]
+			equipment: Equipment[]
+			length?: Length
+		}
+
+		interface Equipment {
+			id?: number
+			name: string
+			localizedName?: string
+			image: string
+		}
+
+		interface Length {
+			number: number
+			unit: string
+		}
 	}
 }
 
-export {};
+export { };

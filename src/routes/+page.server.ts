@@ -120,29 +120,47 @@ export const actions: Actions = {
 
 	async fetchRecipes({
 		request,
-		url,
-		locals: { supabase }
-	}): Promise<ActionFailure<{ error: string }> | { recipes: JSON }> {
+	}): Promise<ActionFailure<{ error: string }> | { recipes: App.Recipe[] }> {
 		const formData = await request.formData();
 		const ingredients = (formData.getAll('ingredients') as string[]).join(',');
 		const response = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=30&ranking=2&ignorePantry=true&apiKey=${PRIVATE_SPOONACULAR_KEY}`)
-		
-		return {
-			recipes: await response.json(),
-		};
+
+		if (response.status === 200) {
+			return {
+				recipes: await response.json(),
+			};
+		} else {
+			return fail(500, {
+				error: 'External API request failed. Try again later.'
+			});
+		}
 	},
 
 	async fetchRecipeDetail({
 		request,
-		url,
-		locals: { supabase }
-	}): Promise<ActionFailure<{ error: string }> | { recipes: JSON }> {
+	}): Promise<ActionFailure<{ error: string }> | { detail: App.RecipeDetail, equipments: App.Equipment[], instructions: App.InstructionStep[] }> {
 		const formData = await request.formData();
-		const ingredients = (formData.getAll('ingredients') as string[]).join(',');
-		const response = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=30&ranking=2&ignorePantry=true&apiKey=${PRIVATE_SPOONACULAR_KEY}`)
+		const recipeId = formData.get('id') as string;
+		const recipeDetail = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?includeNutrition=false&apiKey=${PRIVATE_SPOONACULAR_KEY}`);
+		const recipeEquipments = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/equipmentWidget.json?apiKey=${PRIVATE_SPOONACULAR_KEY}`);
+		const recipeInstructions = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/analyzedInstructions?apiKey=${PRIVATE_SPOONACULAR_KEY}`);
 		
-		return {
-			recipes: await response.json(),
-		};
+		const instructionsData = await recipeInstructions.json();
+		const equipmentsData = await recipeEquipments.json();
+
+		if (recipeDetail.status === 200) {
+			console.log('equipment', equipmentsData);
+			console.log('instructions', instructionsData[0].steps);
+
+			return {
+				detail: await recipeDetail.json(),
+				equipments: equipmentsData.equipment,
+				instructions: instructionsData[0].steps,
+			};
+		} else {
+			return fail(500, {
+				error: 'External API request failed. Try again later.'
+			});
+		}
 	},
 };
