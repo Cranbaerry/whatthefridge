@@ -90,7 +90,9 @@
 	{#if recipes.length}
 		<div class="mx-10 mt-10 w-full text-token grid grid-cols-1 lg:grid-cols-4 gap-8">
 			{#each paginatedRecipes as recipe}
-				<FoodCard recipe={recipe} />
+			{#key recipe}
+			<FoodCard recipe={recipe} />
+			{/key}				
 			{/each}
 		</div>
 		<Paginator bind:settings={paginatorSettings} class="mt-10" />
