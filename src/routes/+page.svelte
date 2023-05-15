@@ -9,7 +9,6 @@
 	import spinner from 'svelte-awesome/icons/spinner';
 	import search from 'svelte-awesome/icons/search';
 
-
 	let recipes: App.Recipe[] = [];
 	let list: string[] = [];
 	let loading: boolean = false;
@@ -32,7 +31,7 @@
 			console.log(result);
 			let t: ToastSettings;
 			if (result.type === 'success') {
-				recipes = result.data?.recipes;				
+				recipes = result.data?.recipes;
 				if (recipes.length === 0) {
 					t = {
 						message: `Sorry, we couldn't find any recipes with those ingredients.. 😢`,
@@ -53,11 +52,10 @@
 					background: 'variant-filled-error'
 				};
 				toastStore.trigger(t);
-			}			
+			}
 			loading = false;
 		};
 	};
-
 </script>
 
 <div class="container h-full mx-auto py-10 px-5 flex flex-col justify-center items-center">
