@@ -8,10 +8,13 @@
 	import Icon from 'svelte-awesome';
 	import spinner from 'svelte-awesome/icons/spinner';
 	import search from 'svelte-awesome/icons/search';
+	import { page } from '$app/stores';
+	import { getContext, onMount } from 'svelte';
 
 	let recipes: App.Recipe[] = [];
 	let list: string[] = ['apple'];
 	let loading: boolean = false;
+	$: ({ supabase, session } = $page.data);
 
 	$: recipesCount = recipes.length;
 	$: paginatorSettings = {
@@ -28,7 +31,6 @@
 	const handleRecipes: SubmitFunction = () => {
 		loading = true;
 		return async ({ result }) => {
-			console.log(result);
 			let t: ToastSettings;
 			if (result.type === 'success') {
 				recipes = result.data?.recipes;
@@ -62,6 +64,25 @@
 			loading = false;
 		};
 	};
+
+	// const onAuthStateChange = async () => {
+	// 	console.log('inititated');
+	// 	const {
+	// 		data: { subscription }
+	// 	} = supabase.auth.onAuthStateChange((event: any, _session: any) => {
+	// 		console.log('event', event);
+	// 		if (event === 'SIGNED_IN') {
+	// 			console.log('SIGNED_IN');
+
+	// 		} else if (event === 'SIGNED_OUT') {
+	// 			console.log('SIGNED_OUT');
+
+	// 		}
+	// 	});
+
+	// 	return () => subscription.unsubscribe();
+	// };
+	// onMount(onAuthStateChange);
 </script>
 
 <div class="container h-full mx-auto py-10 px-5 flex flex-col justify-center items-center">

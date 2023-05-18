@@ -37,6 +37,7 @@
 	"type": "module",
 	"dependencies": {
 		"@supabase/auth-helpers-sveltekit": "^0.9.4",
-		"svelte-awesome": "^3.2.0"
+		"svelte-awesome": "^3.2.0",
+		"svelte-lazy": "^1.2.1"
 	}
 }

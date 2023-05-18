@@ -12,7 +12,6 @@
 	import AuthenticationForm from '$lib/components/AuthenticationForm.svelte';
 	import { page } from '$app/stores';
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
-	import { invalidate } from '$app/navigation';
 	import { setContext } from 'svelte';
 
 	import { Toast, toastStore } from '@skeletonlabs/skeleton';
@@ -28,6 +27,27 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import book from 'svelte-awesome/icons/book';
 
+	import { invalidate } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import type { LayoutData } from './$types';
+
+	export let data: LayoutData;
+
+	$: ({ supabase, session } = data);
+
+	onMount(() => {
+		const {
+			data: { subscription }
+		} = supabase.auth.onAuthStateChange((event, _session) => {
+			console.log('initiated');
+			if (_session?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth');
+			}
+		});
+
+		return () => subscription.unsubscribe();
+	});
+
 	function showModalAuth(): void {
 		const c: ModalComponent = { ref: AuthenticationForm };
 		const modal: ModalSettings = {
@@ -35,7 +55,6 @@
 			component: c,
 			title: 'Authentication Required',
 			body: 'Complete the form below and then press submit.',
-			response: (r: any) => console.log('response:', r),
 			meta: { tabSet: 0 }
 		};
 		modalStore.trigger(modal);
@@ -167,7 +186,7 @@
 						<svelte:fragment slot="summary">Instructions</svelte:fragment>
 						<svelte:fragment slot="content">
 							<Stepper on:complete={onCompleteHandler}>
-								{#if $drawerStore.meta.recipeInstructions}}
+								{#if $drawerStore.meta.recipeInstructions}
 									{#each $drawerStore.meta.recipeInstructions as instruction}
 										<Step>
 											<svelte:fragment slot="header">Step {instruction.number}</svelte:fragment>

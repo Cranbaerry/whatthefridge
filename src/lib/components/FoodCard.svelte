@@ -1,25 +1,34 @@
 <script lang="ts">
 	import Icon from 'svelte-awesome';
 	import heart from 'svelte-awesome/icons/heart';
-	import { page } from '$app/stores';
+	import spinner from 'svelte-awesome/icons/spinner';
 	import { getContext, onMount } from 'svelte';
 	import type { DrawerSettings } from '@skeletonlabs/skeleton';
-	import type { User } from '@supabase/supabase-js';
 	import { drawerStore, toastStore } from '@skeletonlabs/skeleton';
 	import { enhance, type SubmitFunction } from '$app/forms';
+	import { page } from '$app/stores';
+
+	// @ts-ignore
 	const { showModalAuth } = getContext('authentication');
+	// @ts-ignore
 	const { removePlaceholder } = getContext('placeholder');
+
+	import Lazy from 'svelte-lazy';
 
 	export let recipe: App.Recipe;
 	let loading: boolean = false;
 	let changingFav: boolean = false;
 
-	// export let data:any;
 	$: ({ supabase, session } = $page.data);
 	$: bouncingHeart = changingFav ? 'animate-bounce' : '';
 	$: fillHeart = recipe.bookmarked ? '!fill-red-500' : '';
+	$: if (!session?.user) {
+		recipe.bookmarked = false;
+	} else {
+		setBookmarkState();
+	}
 
-	onMount(async () => {		
+	const setBookmarkState = async () => {
 		try {
 			if (!session?.user) return;
 
@@ -43,9 +52,27 @@
 				.select('*', { count: 'exact', head: true })
 				.eq('recipe_id', recipe.id);
 
-			recipe.likes += count;
+			recipe.totalLikes = recipe.likes + count;
 		}
-	});
+	};
+
+	// const onAuthStateChange = async () => {
+	// 	const {
+	// 		data: { subscription }
+	// 	} = supabase.auth.onAuthStateChange((event: any, _session: any) => {
+	// 		console.log('event', event);
+	// 		if (event === 'SIGNED_IN') {
+	// 			console.log('SIGNED_IN');
+	// 			setBookmarkState();
+	// 		} else if (event === 'SIGNED_OUT') {
+	// 			// BUG in supabase, event not trigerred
+	// 			console.log('SIGNED_OUT');
+	// 			recipe.bookmarked = false;
+	// 		}
+	// 	});
+
+	// 	return () => subscription.unsubscribe();
+	// };
 
 	const toggleFav = async () => {
 		if (!session?.user) {
@@ -55,7 +82,7 @@
 
 		try {
 			changingFav = true;
-			recipe.likes += recipe.bookmarked ? -1 : 1;
+			recipe.totalLikes = recipe.likes + (recipe.bookmarked ? -1 : 1);
 			recipe.bookmarked = !recipe.bookmarked;
 			if (recipe.bookmarked) {
 				console.log('Liking..');
@@ -79,7 +106,7 @@
 			console.log('Done!');
 		} catch (error) {
 			console.log(error);
-			recipe.likes += recipe.bookmarked ? -1 : 1;
+			recipe.totalLikes = recipe.likes + (recipe.bookmarked ? -1 : 1);
 			recipe.bookmarked = !recipe.bookmarked;
 			toastStore.trigger({
 				message: error as string,
@@ -124,22 +151,26 @@
 			loading = false;
 		};
 	};
+
+	onMount(setBookmarkState);
+	// onMount(onAuthStateChange);
 </script>
 
 <form action="?/fetchRecipeDetail" method="post" use:enhance={handleRecipeDetail}>
 	<button class="relative card card-hover overflow-hidden variant-soft w-full" disabled={loading}>
 		<input name="id" type="hidden" value={recipe.id} />
 		<header
-			data-placeholder
-			class="overflow-hidden relative bg-gray-200 w-full h-[17rem]"
+			class="overflow-hidden relative bg-gray-200 w-full h-[16rem]"
 			style="min-height: 15rem;"
 		>
-			<img
-				src={recipe.image}
-				class="object-cover w-full h-full"
-				alt={recipe.title}
-				on:load={removePlaceholder}
-			/>
+			<Lazy height={350}>
+				<img
+					src={recipe.image}
+					class="object-cover !w-full !h-full"
+					alt={recipe.title}
+					on:load={removePlaceholder}
+				/>
+			</Lazy>
 		</header>
 
 		<div class="p-4 space-y-4 h-full">
@@ -155,7 +186,13 @@
 					on:click|stopPropagation|preventDefault={toggleFav}
 				>
 					<span><Icon data={heart} class="{fillHeart} {bouncingHeart}" /></span>
-					<span>{recipe.likes}</span>
+					<span>
+						{#if recipe.totalLikes !== undefined}
+							{recipe.totalLikes}
+						{:else}
+							<Icon data={spinner} pulse />
+						{/if}
+					</span>
 				</button>
 			</div>
 		</footer>
