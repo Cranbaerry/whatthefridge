@@ -27,8 +27,6 @@
 	import clock from 'svelte-awesome/icons/clockO';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import book from 'svelte-awesome/icons/book';
-	import github from 'svelte-awesome/icons/github';
-
 
 	function showModalAuth(): void {
 		const c: ModalComponent = { ref: AuthenticationForm };
@@ -138,7 +136,7 @@
 							</dl>
 						</svelte:fragment>
 					</AccordionItem>
-					<AccordionItem open>
+					<AccordionItem open={$drawerStore.meta.recipeEquipments.length}>
 						<svelte:fragment slot="lead"><Icon data={cutlery} /></svelte:fragment>
 						<svelte:fragment slot="summary">Equipment</svelte:fragment>
 						<svelte:fragment slot="content">
@@ -159,30 +157,36 @@
 										</div>
 									{/each}
 								{:else}
-									<div class="text-center">No equipment needed.</div>
+									<div class="text-left">Whoops, no equipment data recorded.. 😭</div>
 								{/if}
 							</dl>
 						</svelte:fragment>
 					</AccordionItem>
-					<AccordionItem open>
+					<AccordionItem open={$drawerStore.meta.recipeInstructions}>
 						<svelte:fragment slot="lead"><Icon data={listOl} /></svelte:fragment>
 						<svelte:fragment slot="summary">Instructions</svelte:fragment>
 						<svelte:fragment slot="content">
 							<Stepper on:complete={onCompleteHandler}>
-								{#each $drawerStore.meta.recipeInstructions as instruction}
-									<Step>
-										<svelte:fragment slot="header">Step {instruction.number}</svelte:fragment>
-										{instruction.step}
-										<div class="flex flex-row space-x-2 mt-3">
-											{#each instruction.ingredients as ingredient}
-												<span class="badge variant-soft-secondary">{ingredient.name}</span>
-											{/each}
-											{#each instruction.equipment as equipment}
-												<span class="badge variant-soft-secondary">{equipment.name}</span>
-											{/each}
-										</div>
-									</Step>
-								{/each}
+								{#if $drawerStore.meta.recipeInstructions}}
+									{#each $drawerStore.meta.recipeInstructions as instruction}
+										<Step>
+											<svelte:fragment slot="header">Step {instruction.number}</svelte:fragment>
+											{instruction.step}
+											<div class="flex flex-row space-x-2 mt-3">
+												{#each instruction.ingredients as ingredient}
+													<span class="badge variant-soft-secondary">{ingredient.name}</span>
+												{/each}
+												{#each instruction.equipment as equipment}
+													<span class="badge variant-soft-secondary">{equipment.name}</span>
+												{/each}
+											</div>
+										</Step>
+									{/each}
+								{:else}
+									<dl class="list-dl">
+										<div class="text-left">Oh nyo, no instructions data recorded.. 👉👈</div>
+									</dl>
+								{/if}
 								<!-- ... -->
 							</Stepper>
 						</svelte:fragment>
@@ -224,9 +228,17 @@
 	<svelte:fragment slot="pageFooter">
 		<footer class="text-center p-5">
 			<p>Made with ❤️ in BINUS.</p>
-			<p>Powered by <a href="https://www.skeleton.dev/" target="_blank" class="!no-underline !text-secondary-900">Skeleton</a> and <a href="https://supabase.com/" target="_blank" class="!no-underline !text-secondary-900">Supabase</a>.</p>
-
+			<p>
+				Powered by <a
+					href="https://www.skeleton.dev/"
+					target="_blank"
+					class="!no-underline !text-secondary-900">Skeleton</a
+				>
+				and
+				<a href="https://supabase.com/" target="_blank" class="!no-underline !text-secondary-900"
+					>Supabase</a
+				>.
+			</p>
 		</footer>
-		
 	</svelte:fragment>
 </AppShell>

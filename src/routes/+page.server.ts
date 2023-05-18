@@ -149,13 +149,10 @@ export const actions: Actions = {
 		const equipmentsData = await recipeEquipments.json();
 
 		if (recipeDetail.status === 200) {
-			console.log('equipment', equipmentsData);
-			console.log('instructions', instructionsData[0].steps);
-
 			return {
 				detail: await recipeDetail.json(),
-				equipments: equipmentsData.equipment,
-				instructions: instructionsData[0].steps,
+				equipments: equipmentsData?.equipment,
+				instructions: instructionsData[0]?.steps,
 			};
 		} else {
 			return fail(500, {
