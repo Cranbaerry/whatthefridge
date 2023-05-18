@@ -10,14 +10,17 @@
 
 	// @ts-ignore
 	const { showModalAuth } = getContext('authentication');
-	// @ts-ignore
-	const { removePlaceholder } = getContext('placeholder');
+
 
 	import Lazy from 'svelte-lazy';
 
 	export let recipe: App.Recipe;
 	let loading: boolean = false;
 	let changingFav: boolean = false;
+	let placeholderElement: HTMLElement;
+	const removePlaceholder = (e: any) => {
+		placeholderElement.removeAttribute('data-placeholder');
+	};
 
 	$: ({ supabase, session } = $page.data);
 	$: bouncingHeart = changingFav ? 'animate-bounce' : '';
@@ -55,24 +58,6 @@
 			recipe.totalLikes = recipe.likes + count;
 		}
 	};
-
-	// const onAuthStateChange = async () => {
-	// 	const {
-	// 		data: { subscription }
-	// 	} = supabase.auth.onAuthStateChange((event: any, _session: any) => {
-	// 		console.log('event', event);
-	// 		if (event === 'SIGNED_IN') {
-	// 			console.log('SIGNED_IN');
-	// 			setBookmarkState();
-	// 		} else if (event === 'SIGNED_OUT') {
-	// 			// BUG in supabase, event not trigerred
-	// 			console.log('SIGNED_OUT');
-	// 			recipe.bookmarked = false;
-	// 		}
-	// 	});
-
-	// 	return () => subscription.unsubscribe();
-	// };
 
 	const toggleFav = async () => {
 		if (!session?.user) {
@@ -152,23 +137,25 @@
 		};
 	};
 
+	const cardFadeOption = {delay: 0, duration: 700};
 	onMount(setBookmarkState);
-	// onMount(onAuthStateChange);
 </script>
 
 <form action="?/fetchRecipeDetail" method="post" use:enhance={handleRecipeDetail}>
 	<button class="relative card card-hover overflow-hidden variant-soft w-full" disabled={loading}>
 		<input name="id" type="hidden" value={recipe.id} />
 		<header
-			class="overflow-hidden relative bg-gray-200 w-full h-[16rem]"
+			bind:this={placeholderElement}
+			data-placeholder
+			class="overflow-hidden relative bg-gray-200 w-full h-[16rem] recipe-{recipe.id}"
 			style="min-height: 15rem;"
 		>
-			<Lazy height={350}>
+			<Lazy height={350} fadeOption={cardFadeOption}>
 				<img
+					on:load={removePlaceholder} 
 					src={recipe.image}
 					class="object-cover !w-full !h-full"
 					alt={recipe.title}
-					on:load={removePlaceholder}
 				/>
 			</Lazy>
 		</header>
