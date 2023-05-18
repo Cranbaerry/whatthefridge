@@ -11,13 +11,13 @@
 	const { removePlaceholder } = getContext('placeholder');
 
 	export let recipe: App.Recipe;
-	// export let user: User;
-	let heartStyle: string;
 	let loading: boolean = false;
+	let changingFav: boolean = false;
 
 	// export let data:any;
 	$: ({ supabase, session } = $page.data);
-	$: fillRed = recipe.bookmarked ? '!fill-red-500' : '';
+	$: bouncingHeart = changingFav ? 'animate-bounce' : '';
+	$: fillHeart = recipe.bookmarked ? '!fill-red-500' : '';
 
 	onMount(async () => {		
 		try {
@@ -29,14 +29,8 @@
 				.eq('recipe_id', recipe.id)
 				.eq('user_id', session?.user.id);
 
-			console.log('data', count);
 			if (error) throw error;
-
-			if (!count) recipe.bookmarked = false;
-			else {
-				console.log('Recipe ', recipe.title, ' is bookmarked.');
-				recipe.bookmarked = true;
-			}
+			recipe.bookmarked = !count ? false : true;
 		} catch (error) {
 			toastStore.trigger({
 				message: error as string,
@@ -49,7 +43,6 @@
 				.select('*', { count: 'exact', head: true })
 				.eq('recipe_id', recipe.id);
 
-			heartStyle = recipe.bookmarked ? '!fill-red-500' : '';
 			recipe.likes += count;
 		}
 	});
@@ -61,7 +54,7 @@
 		}
 
 		try {
-			heartStyle = `${fillRed} animate-bounce`;
+			changingFav = true;
 			recipe.likes += recipe.bookmarked ? -1 : 1;
 			recipe.bookmarked = !recipe.bookmarked;
 			if (recipe.bookmarked) {
@@ -93,7 +86,7 @@
 				background: 'variant-filled-error'
 			});
 		} finally {
-			heartStyle = recipe.bookmarked ? fillRed : '';
+			changingFav = false;
 		}
 	};
 
@@ -161,7 +154,7 @@
 					class="btn btn-sm badge variant-filled-surface"
 					on:click|stopPropagation|preventDefault={toggleFav}
 				>
-					<span><Icon data={heart} class={heartStyle} /></span>
+					<span><Icon data={heart} class="{fillHeart} {bouncingHeart}" /></span>
 					<span>{recipe.likes}</span>
 				</button>
 			</div>
