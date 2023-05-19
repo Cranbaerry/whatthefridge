@@ -65,10 +65,10 @@
 <div class="container h-full mx-auto py-10 px-5 flex flex-col justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<!-- Animated Logo -->
-		<figure>
+		<figure class="max-w-[45rem]">
 			<!-- <section class="img-bg" /> -->
-			<img src={logo} alt="WhatTheFridge" />
-			<h1 class="h1 mt-2 font-bold">Find out what you can make with what you have</h1>
+			<img src={logo} alt="WhatTheFridge"  />
+			<h2 class="h2 font-bold">Find out what you can make, with what you have!</h2>
 		</figure>
 		<!-- / -->
 		<form action="?/fetchRecipes" method="post" class="w-full" use:enhance={handleRecipes}>
