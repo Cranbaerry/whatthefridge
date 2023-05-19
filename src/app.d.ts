@@ -16,10 +16,6 @@ declare global {
 			session: Session | null;
 		}
 
-		interface Recipe {
-			recipeName: null;
-		}
-
 		interface Ingredient {
 			aisle: string;
 			amount: number;
@@ -85,6 +81,8 @@ declare global {
 			analyzedInstructions: any[]
 			originalId: any
 			spoonacularSourceUrl: string
+			steps?: InstructionStep[]
+			equipments?: Equipment[]
 		}
 
 		interface ExtendedIngredient {

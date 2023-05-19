@@ -27,7 +27,6 @@
 	const handleSubmit: SubmitFunction = () => {
 		form.loading = true;
 		return async ({ result }) => {
-			console.log(result);
 			if (result.type === 'failure') {
 				form.error = result.data?.error;
 			}
@@ -107,7 +106,7 @@
 				
 					<footer class="modal-footer {parent.regionFooter}">
 						<button class="btn {parent.buttonNeutral}" on:click|preventDefault={parent.onClose}>{parent.buttonTextCancel}</button>
-						<button class="btn {parent.buttonPositive}" disabled={form.loading} formaction="?/login">Log In</button>
+						<button class="btn {parent.buttonPositive}" disabled={form.loading} formaction="/.?/login">Log In</button>
 					</footer>
 				</form>
 
@@ -124,7 +123,7 @@
 				
 					<footer class="modal-footer {parent.regionFooter}">
 						<button class="btn {parent.buttonNeutral}" on:click|preventDefault={parent.onClose}>{parent.buttonTextCancel}</button>
-						<button class="btn {parent.buttonPositive}" disabled={form.loading} formaction="?/register">Sign up</button>
+						<button class="btn {parent.buttonPositive}" disabled={form.loading} formaction="/.?/register">Sign up</button>
 					</footer>
 				</form>
 

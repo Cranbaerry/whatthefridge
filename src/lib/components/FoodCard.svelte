@@ -7,14 +7,14 @@
 	import { drawerStore, toastStore } from '@skeletonlabs/skeleton';
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import { page } from '$app/stores';
+	import Lazy from 'svelte-lazy';
 
 	// @ts-ignore
 	const { showModalAuth } = getContext('authentication');
 
-
-	import Lazy from 'svelte-lazy';
-
 	export let recipe: App.Recipe;
+	export let recipeDetail: App.RecipeDetail | undefined = undefined;
+	
 	let loading: boolean = false;
 	let changingFav: boolean = false;
 	let placeholderElement: HTMLElement;
@@ -88,9 +88,7 @@
 					throw error;
 				}
 			}
-			console.log('Done!');
 		} catch (error) {
-			console.log(error);
 			recipe.totalLikes = recipe.likes + (recipe.bookmarked ? -1 : 1);
 			recipe.bookmarked = !recipe.bookmarked;
 			toastStore.trigger({
@@ -102,7 +100,22 @@
 		}
 	};
 
-	const handleRecipeDetail: SubmitFunction = () => {
+	const handleRecipeDetail: SubmitFunction = ({ cancel }) => {
+		if (recipeDetail) {
+			cancel();	
+			const drawerSettings: DrawerSettings = {
+				id: 'recipe',
+				width: 'w-[280px] md:w-[550px]',
+				meta: {
+					recipeDetail: recipeDetail,
+					recipeEquipments: recipeDetail.equipments,
+					recipeInstructions: recipeDetail.steps
+				}
+			};
+			
+			return drawerStore.open(drawerSettings);
+		}
+
 		loading = true;
 		return async ({ result }) => {
 			if (result.type === 'success') {
@@ -112,12 +125,7 @@
 
 				const drawerSettings: DrawerSettings = {
 					id: 'recipe',
-					// Provide your property overrides:
-					// bgDrawer: 'bg-purple-900 text-white',
-					// bgBackdrop: 'bg-gradient-to-tr from-indigo-500/50 via-purple-500/50 to-pink-500/50',
 					width: 'w-[280px] md:w-[550px]',
-					// padding: 'p-4',
-					// rounded: 'rounded-xl',
 					meta: {
 						recipeDetail: recipeDetail,
 						recipeEquipments: result.data?.equipments,
@@ -125,8 +133,6 @@
 					}
 				};
 				drawerStore.open(drawerSettings);
-
-				console.log('recipeInstructions', result.data?.instructions);
 			} else if (result.type === 'error') {
 				toastStore.trigger({
 					message: `Internal Server Error. Please try again later.`,
@@ -147,10 +153,9 @@
 		<header
 			bind:this={placeholderElement}
 			data-placeholder
-			class="overflow-hidden relative bg-gray-200 w-full h-[16rem] recipe-{recipe.id}"
-			style="min-height: 15rem;"
+			class="overflow-hidden relative bg-gray-200 w-full"
 		>
-			<Lazy height={350} fadeOption={cardFadeOption}>
+			<Lazy height={260} fadeOption={cardFadeOption}>
 				<img
 					on:load={removePlaceholder} 
 					src={recipe.image}

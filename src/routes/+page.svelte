@@ -1,5 +1,6 @@
 <script lang="ts">
-	import logo from '$lib/assets/logo.svg';
+	// import logo from '$lib/assets/logo.svg';
+	import logo from '$lib/assets/wtf.png';
 	import { InputChip, Paginator } from '@skeletonlabs/skeleton';
 	import FoodCard from '$lib/components/FoodCard.svelte';
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
@@ -8,13 +9,10 @@
 	import Icon from 'svelte-awesome';
 	import spinner from 'svelte-awesome/icons/spinner';
 	import search from 'svelte-awesome/icons/search';
-	import { page } from '$app/stores';
-	import { getContext, onMount } from 'svelte';
 
 	let recipes: App.Recipe[] = [];
 	let list: string[] = ['apple'];
 	let loading: boolean = false;
-	$: ({ supabase, session } = $page.data);
 
 	$: recipesCount = recipes.length;
 	$: paginatorSettings = {
@@ -30,9 +28,9 @@
 
 	const handleRecipes: SubmitFunction = () => {
 		loading = true;
-		return async ({ result }) => {
-			let t: ToastSettings;
+		return async ({ result }) => {			
 			if (result.type === 'success') {
+				let t: ToastSettings;
 				recipes = result.data?.recipes;
 				if (recipes.length === 0) {
 					t = {
@@ -49,49 +47,28 @@
 				await applyAction(result);
 				toastStore.trigger(t);
 			} else if (result.type === 'error') {
-				t = {
+				toastStore.trigger({
 					message: `Something went wrong. Please try again later.`,
 					background: 'variant-filled-error'
-				};
-				toastStore.trigger(t);
+				});
 			} else if (result.type === 'failure') {
-				t = {
+				toastStore.trigger({
 					message: result.data?.error,
 					background: 'variant-filled-error'
-				};
-				toastStore.trigger(t);
+				});
 			}
 			loading = false;
 		};
 	};
-
-	// const onAuthStateChange = async () => {
-	// 	console.log('inititated');
-	// 	const {
-	// 		data: { subscription }
-	// 	} = supabase.auth.onAuthStateChange((event: any, _session: any) => {
-	// 		console.log('event', event);
-	// 		if (event === 'SIGNED_IN') {
-	// 			console.log('SIGNED_IN');
-
-	// 		} else if (event === 'SIGNED_OUT') {
-	// 			console.log('SIGNED_OUT');
-
-	// 		}
-	// 	});
-
-	// 	return () => subscription.unsubscribe();
-	// };
-	// onMount(onAuthStateChange);
 </script>
 
 <div class="container h-full mx-auto py-10 px-5 flex flex-col justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<!-- Animated Logo -->
 		<figure>
-			<section class="img-bg" />
+			<!-- <section class="img-bg" /> -->
 			<img src={logo} alt="WhatTheFridge" />
-			<h2 class="h2 mt-2 font-bold">Find out what you can make with what you have</h2>
+			<h1 class="h1 mt-2 font-bold">Find out what you can make with what you have</h1>
 		</figure>
 		<!-- / -->
 		<form action="?/fetchRecipes" method="post" class="w-full" use:enhance={handleRecipes}>
@@ -100,6 +77,7 @@
 				chips="variant-filled-primary"
 				name="ingredients"
 				placeholder="Enter any ingredients..."
+				padding="p-3"
 			/>
 
 			<div class="flex justify-center space-x-2 mt-7">
@@ -119,7 +97,7 @@
 		<div class="mx-10 mt-10 w-full text-token grid grid-cols-1 lg:grid-cols-4 gap-8">
 			{#each paginatedRecipes as recipe}
 				{#key recipe}
-					<FoodCard {recipe} />
+					<FoodCard recipe={recipe} />
 				{/key}
 			{/each}
 		</div>
@@ -131,7 +109,7 @@
 	figure {
 		@apply flex relative flex-col;
 	}
-	.img-bg {
+	/* .img-bg {
 		@apply w-64 h-64 md:w-80 md:h-80;
 	}
 	.img-bg {
@@ -140,7 +118,7 @@
 		margin: 0 auto;
 		left: 0;
 		right: 0;
-	}
+	} */
 	@keyframes glow {
 		0% {
 			@apply bg-primary-400/50;

@@ -142,16 +142,17 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const recipeId = formData.get('id') as string;
 		const recipeDetail = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?includeNutrition=false&apiKey=${PRIVATE_SPOONACULAR_KEY}`);
-		const recipeEquipments = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/equipmentWidget.json?apiKey=${PRIVATE_SPOONACULAR_KEY}`);
+		//const recipeEquipments = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/equipmentWidget.json?apiKey=${PRIVATE_SPOONACULAR_KEY}`);
 		const recipeInstructions = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/analyzedInstructions?apiKey=${PRIVATE_SPOONACULAR_KEY}`);
 		
 		const instructionsData = await recipeInstructions.json();
-		const equipmentsData = await recipeEquipments.json();
+		// const equipmentsData = await recipeEquipments.json();
 
 		if (recipeDetail.status === 200) {
 			return {
 				detail: await recipeDetail.json(),
-				equipments: equipmentsData?.equipment,
+				// equipments: equipmentsData?.equipment,
+				equipments: [],
 				instructions: instructionsData[0]?.steps,
 			};
 		} else {

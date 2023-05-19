@@ -2,11 +2,10 @@
 	// The ordering of these imports is critical to your app working properly
 	import '@skeletonlabs/skeleton/themes/theme-modern.css';
 	// If you have source.organizeImports set to true in VSCode, then it will auto change this ordering
-	import '@skeletonlabs/skeleton/styles/all.css';
+	import '@skeletonlabs/skeleton/styles/skeleton.css';
 	// Most of your app wide CSS should be put in this file
 	import '../app.postcss';
-	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-
+	import { AppShell, AppBar, popup } from '@skeletonlabs/skeleton';
 	import { Modal, modalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ModalComponent } from '@skeletonlabs/skeleton';
 	import AuthenticationForm from '$lib/components/AuthenticationForm.svelte';
@@ -26,20 +25,33 @@
 	import clock from 'svelte-awesome/icons/clockO';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import book from 'svelte-awesome/icons/book';
-
+	import { goto } from '$app/navigation';
+	import edit from 'svelte-awesome/icons/edit';
+	import user from 'svelte-awesome/icons/user';
 	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { LayoutData } from './$types';
+	import signOut from 'svelte-awesome/icons/signOut';
+	import signIn from 'svelte-awesome/icons/signIn';
+
+	import chevronDown from 'svelte-awesome/icons/chevronDown';
+	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
+	import { storePopup } from '@skeletonlabs/skeleton';
+	import refrigerator from '$lib/assets/fridge-icon.svg';
+
+	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	export let data: LayoutData;
 
 	$: ({ supabase, session } = data);
 
+	// set username and remove email provider @mail.com
+	$: username = session?.user?.email?.split('@')[0];
+
 	onMount(() => {
 		const {
 			data: { subscription }
 		} = supabase.auth.onAuthStateChange((event, _session) => {
-			console.log('initiated');
 			if (_session?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}
@@ -48,7 +60,12 @@
 		return () => subscription.unsubscribe();
 	});
 
-	function showModalAuth(): void {
+	const navigateToDashboard = () => {
+		if (session?.user) goto('/dashboard');
+		else showModalAuth();
+	};
+
+	const showModalAuth = () => {
 		const c: ModalComponent = { ref: AuthenticationForm };
 		const modal: ModalSettings = {
 			type: 'component',
@@ -58,7 +75,7 @@
 			meta: { tabSet: 0 }
 		};
 		modalStore.trigger(modal);
-	}
+	};
 
 	let loading: boolean = false;
 	const handleLogout: SubmitFunction = () => {
@@ -94,7 +111,6 @@
 	};
 
 	setContext('authentication', { showModalAuth });
-	setContext('placeholder', { removePlaceholder });
 </script>
 
 <Modal />
@@ -155,7 +171,7 @@
 							</dl>
 						</svelte:fragment>
 					</AccordionItem>
-					<AccordionItem open={$drawerStore.meta.recipeEquipments.length}>
+					<!-- <AccordionItem open={$drawerStore.meta.recipeEquipments.length}>
 						<svelte:fragment slot="lead"><Icon data={cutlery} /></svelte:fragment>
 						<svelte:fragment slot="summary">Equipment</svelte:fragment>
 						<svelte:fragment slot="content">
@@ -180,7 +196,7 @@
 								{/if}
 							</dl>
 						</svelte:fragment>
-					</AccordionItem>
+					</AccordionItem> -->
 					<AccordionItem open={$drawerStore.meta.recipeInstructions}>
 						<svelte:fragment slot="lead"><Icon data={listOl} /></svelte:fragment>
 						<svelte:fragment slot="summary">Instructions</svelte:fragment>
@@ -221,22 +237,75 @@
 <AppShell>
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
-		<AppBar>
+		<AppBar background="transparent">
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Whatthefridge</strong>
+				<a class="btn hover:variant-soft-primary !font-normal" href="/"> Home </a>
+				<button class="btn hover:variant-soft-primary !font-normal" on:click={navigateToDashboard}>
+					My Recipes
+				</button>
+				<a class="btn hover:variant-soft-primary !font-normal" href="/about"> About </a>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
-				<a class="btn btn-sm variant-soft-surface" href="/" rel="noreferrer"> Home </a>
-				<button class="btn btn-sm variant-soft-surface" on:click={showModalAuth}>My Recipes</button>
-				<a class="btn btn-sm variant-soft-surface" href="/about" target="_blank" rel="noreferrer">
-					About
-				</a>
-				{#if $page.data.session}
-					<form action="?/logout" method="post" use:enhance={handleLogout}>
-						<button class="btn btn-sm variant-soft-surface" disabled={loading} type="submit"
-							>Sign out</button
+				{#if session?.user}
+					<!-- Explore -->
+					<div class="relative hidden lg:block">
+						<!-- trigger -->
+						<button
+							class="btn hover:variant-soft-primary !font-normal"
+							use:popup={{ event: 'click', target: 'features' }}
 						>
-					</form>
+							<span>Hello, {username}!</span>
+							<Icon data={chevronDown} scale={0.7} class="opacity-50" />
+						</button>
+						<!-- popup -->
+						<div class="card p-4 w-57 shadow-xl" data-popup="features">
+							<nav class="list-nav align-left">
+								<ul>
+									<li>
+										<a href="/" class="!inline-block !font-normal">
+											<span class="w-6">
+												<Icon data={book} scale={1.5} class="mr-2" />
+												<a href="dashboard" class="!inline-block !px-0">My recipes list</a>
+											</span>
+										</a>
+									</li>
+									<li>
+										<button class="!inline-block !font-normal !cursor-not-allowed" disabled>
+											<span class="w-6">
+												<Icon data={edit} scale={1.5} class="mr-2" />
+												<span>Create a new recipe</span>
+											</span>
+										</button>
+									</li>
+									<li>
+										<button class="!inline-block !font-normal !cursor-not-allowed" disabled>
+											<span class="w-6">
+												<Icon data={user} scale={1.5} class="mr-2" />
+												<span>Manage Account</span>
+											</span>
+										</button>
+									</li>
+									<hr class="!my-4" />
+									<li>
+										<form action="/.?/logout" method="post" use:enhance={handleLogout}>
+											<button class="!inline-block !font-normal" type="submit">
+												<Icon data={signOut} scale={1.5} class="mr-2" />
+												Sign out
+											</button>
+										</form>
+									</li>
+								</ul>
+							</nav>
+							<div class="arrow bg-surface-100-800-token" />
+						</div>
+					</div>
+				{:else}
+					<button
+						class="btn hover:variant-soft-primary !font-normal"
+						on:click={navigateToDashboard}
+					>
+						Sign In
+					</button>
 				{/if}
 			</svelte:fragment>
 		</AppBar>
