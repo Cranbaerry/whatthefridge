@@ -1,7 +1,10 @@
 import { AuthApiError } from '@supabase/supabase-js';
 import { fail, redirect, type ActionFailure } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { PRIVATE_SPOONACULAR_KEY } from '$env/static/private'
+import { PRIVATE_SPOONACULAR_KEY, PRIVATE_WEBSITE_URL } from '$env/static/private'
+import { PUBLIC_WEBSITE_URL } from '$env/static/public'
+import { dev } from '$app/environment';
+import { goto } from '$app/navigation';
 
 export const actions: Actions = {
 	async login({
@@ -53,7 +56,6 @@ export const actions: Actions = {
 
 	async register({
 		request,
-		url,
 		locals: { supabase }
 	}): Promise<ActionFailure<{ error: string; values?: { email: string } }> | { message: string; login: boolean }> {
 		const formData = await request.formData();
@@ -77,7 +79,7 @@ export const actions: Actions = {
 		const { error, data } = await supabase.auth.signUp({
 			email,
 			password,
-			options: { emailRedirectTo: url.origin }
+			options: { emailRedirectTo: dev ? PUBLIC_WEBSITE_URL : PRIVATE_WEBSITE_URL }
 		});
 
 		if (error) {
@@ -108,7 +110,7 @@ export const actions: Actions = {
 		}
 
 		return {
-			message: 'Please check your email for a magic link to log into the website.',
+			message: 'Please check your email to confirm your account.',
 			login: false,
 		};
 	},
@@ -144,7 +146,7 @@ export const actions: Actions = {
 		const recipeDetail = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/information?includeNutrition=false&apiKey=${PRIVATE_SPOONACULAR_KEY}`);
 		//const recipeEquipments = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/equipmentWidget.json?apiKey=${PRIVATE_SPOONACULAR_KEY}`);
 		const recipeInstructions = await fetch(`https://api.spoonacular.com/recipes/${recipeId}/analyzedInstructions?apiKey=${PRIVATE_SPOONACULAR_KEY}`);
-		
+
 		const instructionsData = await recipeInstructions.json();
 		// const equipmentsData = await recipeEquipments.json();
 
@@ -160,5 +162,31 @@ export const actions: Actions = {
 				error: 'External API request failed. Try again later.'
 			});
 		}
+	},
+
+	async loginOAuth({
+		url,
+		locals: { supabase }
+	}): Promise<ActionFailure<{ error: string }>> {
+		const provider:any = url.searchParams.get('provider') || 'google';
+		const { data, error } = await supabase.auth.signInWithOAuth({
+			provider: provider,
+			options: {
+				queryParams: {
+					access_type: 'offline',
+					prompt: 'consent',
+				},
+			},
+		});
+
+		if (error) {
+			console.log('error', error);
+			return fail(500, {
+				error: 'Server error. Try again later.',
+			});
+		}
+
+		console.log('request', provider);
+		throw redirect(307, data.url as string);
 	},
 };

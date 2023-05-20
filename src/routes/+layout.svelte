@@ -39,6 +39,7 @@
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import refrigerator from '$lib/assets/fridge-icon.svg';
+	import { redirect } from '@sveltejs/kit';
 
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -63,17 +64,27 @@
 
 	const navigateToDashboard = () => {
 		if (session?.user) goto('/dashboard');
-		else showModalAuth();
+		else {
+			toastStore.trigger({
+				message: 'You need to be authenticated first to access the dashboard!',
+				background: 'variant-filled-warning',
+				action: {
+					label: 'Sign In',
+					response: () => showModalAuth('/dashboard'),
+				}
+			});			
+		}
 	};
 
-	const showModalAuth = () => {
-		const c: ModalComponent = { ref: AuthenticationForm };
+	const showModalAuth = (redirect: string | undefined = undefined) => {
+		const c: ModalComponent = {
+			ref: AuthenticationForm,
+			slot: ''
+		};
 		const modal: ModalSettings = {
 			type: 'component',
 			component: c,
-			title: 'Authentication Required',
-			body: 'Complete the form below and then press submit.',
-			meta: { tabSet: 0 }
+			meta: { tabSet: 0, redirect: redirect }
 		};
 		modalStore.trigger(modal);
 	};
@@ -83,13 +94,11 @@
 		loading = true;
 		return async ({ result }) => {
 			if (result.type === 'redirect') {
-				const t: ToastSettings = {
+				await invalidate('supabase:auth');
+				toastStore.trigger({
 					message: 'You have been logged out. See you soon!',
 					background: 'variant-filled-secondary'
-				};
-
-				await invalidate('supabase:auth');
-				toastStore.trigger(t);
+				});
 			} else {
 				await applyAction(result);
 			}
@@ -255,7 +264,7 @@
 							</svg>
 						</span>
 					</button>
-					<!-- <strong class="text-xl uppercase">WTF</strong> -->					
+					<!-- <strong class="text-xl uppercase">WTF</strong> -->
 					<div class="card p-4 w-57 shadow-xl" data-popup="mobileNav">
 						<nav class="list-nav align-left">
 							<ul>
@@ -303,7 +312,7 @@
 											</button>
 										</form>
 									{:else}
-										<button class="!inline-block !font-normal" on:click={showModalAuth}>
+										<button class="!inline-block !font-normal" on:click={() => showModalAuth()}>
 											<Icon data={signIn} scale={1.5} class="mr-2" />
 											Sign In
 										</button>
@@ -328,7 +337,11 @@
 				</div>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
-				<button class="gh-search gh-icon-btn lg:hidden" aria-label="Search this site" data-ghost-search="">
+				<button
+					class="gh-search gh-icon-btn lg:hidden"
+					aria-label="Search this site"
+					data-ghost-search=""
+				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
@@ -401,7 +414,7 @@
 				{:else}
 					<button
 						class="btn hover:variant-soft-primary !font-normal hidden lg:block"
-						on:click={navigateToDashboard}
+						on:click={() => showModalAuth()}
 					>
 						Sign In
 					</button>
