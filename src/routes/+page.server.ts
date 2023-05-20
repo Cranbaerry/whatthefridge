@@ -180,13 +180,11 @@ export const actions: Actions = {
 		});
 
 		if (error) {
-			console.log('error', error);
 			return fail(500, {
 				error: 'Server error. Try again later.',
 			});
 		}
 
-		console.log('request', provider);
 		throw redirect(307, data.url as string);
 	},
 };
