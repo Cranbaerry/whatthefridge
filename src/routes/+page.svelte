@@ -68,7 +68,7 @@
 		<figure class="max-w-[45rem]">
 			<!-- <section class="img-bg" /> -->
 			<img src={logo} alt="WhatTheFridge"  />
-			<h2 class="h2 font-bold">Find out what you can make, with what you have!</h2>
+			<h3 class="h3 font-bold">Find out what you can make, with what you have!</h3>
 		</figure>
 		<!-- / -->
 		<form action="?/fetchRecipes" method="post" class="w-full" use:enhance={handleRecipes}>
@@ -76,7 +76,7 @@
 				bind:value={list}
 				chips="variant-filled-primary"
 				name="ingredients"
-				placeholder="Enter any ingredients..."
+				placeholder="Enter a	ny ingredients..."
 				padding="p-3"
 			/>
 
