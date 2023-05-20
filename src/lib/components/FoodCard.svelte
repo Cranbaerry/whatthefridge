@@ -100,9 +100,14 @@
 		}
 	};
 
+	const stripHtmlTags = (html: string) => {
+		return html.replace(/<\/?[^>]+(>|$)/g, '');
+	};
+
 	const handleRecipeDetail: SubmitFunction = ({ cancel }) => {
 		if (recipeDetail) {
 			cancel();	
+			recipeDetail.summary = stripHtmlTags(recipeDetail.summary);
 			const drawerSettings: DrawerSettings = {
 				id: 'recipe',
 				width: 'w-[280px] md:w-[550px]',
@@ -121,7 +126,7 @@
 			if (result.type === 'success') {
 				// Strip HTML tags from summary
 				let recipeDetail = result.data?.detail;
-				recipeDetail.summary = recipeDetail.summary.replace(/<\/?[^>]+(>|$)/g, '');
+				recipeDetail.summary = stripHtmlTags(recipeDetail.summary);
 
 				const drawerSettings: DrawerSettings = {
 					id: 'recipe',

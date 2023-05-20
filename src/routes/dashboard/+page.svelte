@@ -82,7 +82,7 @@
 
 <div class="container h-full mx-auto py-3 lg:py-10 px-5 flex flex-col justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center w-full">
-		<h1 style="font-size: 5rem !important; line-height: 5rem;">My Recipes</h1>
+		<h1>My Recipes</h1>
 		<div class="input-group input-group-divider grid-cols-[auto_1fr_auto] max-w-[40rem]">
 			<div class="input-group-shim"><Icon data={search} /></div>
 			<input type="search" bind:value={searchKeyword} placeholder="Filter by name..." />

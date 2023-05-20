@@ -68,7 +68,7 @@
 		<figure class="max-w-[45rem]">
 			<!-- <section class="img-bg" /> -->
 			<img src={logo} alt="WhatTheFridge"  />
-			<h3 class="h3 font-bold">Find out what you can make, with what you have!</h3>
+			<h3>Find out what you can make, with what you have!</h3>
 		</figure>
 		<!-- / -->
 		<form action="?/fetchRecipes" method="post" class="w-full" use:enhance={handleRecipes}>
