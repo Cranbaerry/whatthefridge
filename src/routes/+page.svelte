@@ -76,7 +76,7 @@
 				bind:value={list}
 				chips="variant-filled-primary"
 				name="ingredients"
-				placeholder="Enter a	ny ingredients..."
+				placeholder="Enter any ingredients..."
 				padding="p-3"
 			/>
 
