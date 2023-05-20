@@ -33,6 +33,7 @@
 	import type { LayoutData } from './$types';
 	import signOut from 'svelte-awesome/icons/signOut';
 	import signIn from 'svelte-awesome/icons/signIn';
+	import infoCircle from 'svelte-awesome/icons/infoCircle';
 
 	import chevronDown from 'svelte-awesome/icons/chevronDown';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
@@ -239,13 +240,111 @@
 		<!-- App Bar -->
 		<AppBar background="transparent">
 			<svelte:fragment slot="lead">
-				<a class="btn hover:variant-soft-primary !font-normal" href="/"> Home </a>
-				<button class="btn hover:variant-soft-primary !font-normal" on:click={navigateToDashboard}>
-					My Recipes
-				</button>
-				<a class="btn hover:variant-soft-primary !font-normal" href="/about"> About </a>
+				<!-- Desktop -->
+				<div class="flex items-center">
+					<!-- Mobile Navigations -->
+					<button
+						class="lg:hidden btn btn-sm mr-4 px-0"
+						use:popup={{ event: 'click', target: 'mobileNav' }}
+					>
+						<span>
+							<svg viewBox="0 0 100 80" class="fill-token w-4 h-4">
+								<rect width="100" height="20" />
+								<rect y="30" width="100" height="20" />
+								<rect y="60" width="100" height="20" />
+							</svg>
+						</span>
+					</button>
+					<!-- <strong class="text-xl uppercase">WTF</strong> -->					
+					<div class="card p-4 w-57 shadow-xl" data-popup="mobileNav">
+						<nav class="list-nav align-left">
+							<ul>
+								<li>
+									<button class="!inline-block !font-normal" on:click={navigateToDashboard}>
+										<span class="w-6">
+											<Icon data={book} scale={1.5} class="mr-2" />
+											My recipes list
+										</span>
+									</button>
+								</li>
+								{#if session?.user}
+									<li>
+										<button class="!inline-block !font-normal !cursor-not-allowed" disabled>
+											<span class="w-6">
+												<Icon data={edit} scale={1.5} class="mr-2" />
+												<span>Create a new recipe</span>
+											</span>
+										</button>
+									</li>
+									<li>
+										<button class="!inline-block !font-normal !cursor-not-allowed" disabled>
+											<span class="w-6">
+												<Icon data={user} scale={1.5} class="mr-2" />
+												<span>Manage Account</span>
+											</span>
+										</button>
+									</li>
+								{/if}
+								<li>
+									<a href="/about" class="!inline-block !font-normal">
+										<span class="w-6">
+											<Icon data={infoCircle} scale={1.5} class="mr-2" />
+											About
+										</span>
+									</a>
+								</li>
+								<hr class="!my-4" />
+								<li>
+									{#if session?.user}
+										<form action="/.?/logout" method="post" use:enhance={handleLogout}>
+											<button class="!inline-block !font-normal" type="submit">
+												<Icon data={signOut} scale={1.5} class="mr-2" />
+												Sign out
+											</button>
+										</form>
+									{:else}
+										<button class="!inline-block !font-normal" on:click={showModalAuth}>
+											<Icon data={signIn} scale={1.5} class="mr-2" />
+											Sign In
+										</button>
+									{/if}
+								</li>
+							</ul>
+						</nav>
+						<div class="arrow bg-surface-100-800-token" />
+					</div>
+
+					<!-- Desktop Navigations -->
+					<a class="btn hover:variant-soft-primary !font-normal hidden lg:block" href="/"> Home </a>
+					<button
+						class="btn hover:variant-soft-primary !font-normal hidden lg:block"
+						on:click={navigateToDashboard}
+					>
+						My Recipes
+					</button>
+					<a class="btn hover:variant-soft-primary !font-normal hidden lg:block" href="/about">
+						About
+					</a>
+				</div>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
+				<button class="gh-search gh-icon-btn lg:hidden" aria-label="Search this site" data-ghost-search="">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						stroke-width="2"
+						width="20"
+						height="20"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+						/>
+					</svg>
+				</button>
 				{#if session?.user}
 					<!-- Explore -->
 					<div class="relative hidden lg:block">
@@ -262,12 +361,12 @@
 							<nav class="list-nav align-left">
 								<ul>
 									<li>
-										<a href="/" class="!inline-block !font-normal">
+										<button class="!inline-block !font-normal" on:click={navigateToDashboard}>
 											<span class="w-6">
 												<Icon data={book} scale={1.5} class="mr-2" />
-												<a href="dashboard" class="!inline-block !px-0">My recipes list</a>
+												My recipes list
 											</span>
-										</a>
+										</button>
 									</li>
 									<li>
 										<button class="!inline-block !font-normal !cursor-not-allowed" disabled>
@@ -301,7 +400,7 @@
 					</div>
 				{:else}
 					<button
-						class="btn hover:variant-soft-primary !font-normal"
+						class="btn hover:variant-soft-primary !font-normal hidden lg:block"
 						on:click={navigateToDashboard}
 					>
 						Sign In

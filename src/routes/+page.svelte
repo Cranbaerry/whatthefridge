@@ -62,7 +62,7 @@
 	};
 </script>
 
-<div class="container h-full mx-auto py-10 px-5 flex flex-col justify-center items-center">
+<div class="container h-full mx-auto py-3 lg:py-10  px-5 flex flex-col justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<!-- Animated Logo -->
 		<figure class="max-w-[45rem]">
