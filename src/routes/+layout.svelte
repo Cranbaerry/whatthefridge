@@ -25,6 +25,7 @@
 	import clock from 'svelte-awesome/icons/clockO';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import book from 'svelte-awesome/icons/book';
+	import home from 'svelte-awesome/icons/home';
 	import { goto } from '$app/navigation';
 	import edit from 'svelte-awesome/icons/edit';
 	import user from 'svelte-awesome/icons/user';
@@ -34,21 +35,22 @@
 	import signOut from 'svelte-awesome/icons/signOut';
 	import signIn from 'svelte-awesome/icons/signIn';
 	import infoCircle from 'svelte-awesome/icons/infoCircle';
+	import logo from '$lib/assets/wtf.png';
 
 	import chevronDown from 'svelte-awesome/icons/chevronDown';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import refrigerator from '$lib/assets/fridge-icon.svg';
 	import { redirect } from '@sveltejs/kit';
+	
 
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	export let data: LayoutData;
 
 	$: ({ supabase, session } = data);
-
-	// set username and remove email provider @mail.com
 	$: username = session?.user?.email?.split('@')[0];
+	$: logoDisplayClass = $page.url.pathname === '/' ? 'hidden' : 'block';
 
 	onMount(() => {
 		const {
@@ -247,7 +249,7 @@
 <AppShell>
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
-		<AppBar background="transparent">
+		<AppBar background="transparent" gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
 			<svelte:fragment slot="lead">
 				<!-- Desktop -->
 				<div class="flex items-center">
@@ -264,10 +266,17 @@
 							</svg>
 						</span>
 					</button>
-					<!-- <strong class="text-xl uppercase">WTF</strong> -->
 					<div class="card p-4 w-57 shadow-xl" data-popup="mobileNav">
 						<nav class="list-nav align-left">
 							<ul>
+								<li>
+									<a class="!inline-block !font-normal" href="/">
+										<span class="w-6">
+											<Icon data={home} scale={1.5} class="mr-2" />
+											Home
+										</span>
+									</a>
+								</li>
 								<li>
 									<button class="!inline-block !font-normal" on:click={navigateToDashboard}>
 										<span class="w-6">
@@ -336,6 +345,10 @@
 					</a>
 				</div>
 			</svelte:fragment>
+			
+			<a href="/">
+				<img src={logo} alt="WhatTheFridge" class="lg:!ml-0 w-[200px] overflow-hidden {logoDisplayClass}"/>
+			</a>
 			<svelte:fragment slot="trail">
 				<button
 					class="gh-search gh-icon-btn lg:hidden"
