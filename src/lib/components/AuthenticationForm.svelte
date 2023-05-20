@@ -186,7 +186,7 @@
 										style="--darkreader-inline-fill: #ec5043;"
 									/>
 								</svg>
-								Sign up with Google
+								Sign in with Google
 							</button>
 							<button
 								class="btn variant-ringed-surface flex gap-2"
@@ -210,7 +210,7 @@
 										data-darkreader-inline-fill=""
 									/>
 								</svg>
-								Sign up with Discord
+								Sign in with Discord
 							</button>
 						</form>
 					</form>
