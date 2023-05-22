@@ -4,7 +4,7 @@
 	// import { toastStore } from '@skeletonlabs/skeleton';
 	import FoodCard from '$lib/components/FoodCard.svelte';
 	import { Paginator } from '@skeletonlabs/skeleton';
-	import search from 'svelte-awesome/icons/search';
+	import filter from 'svelte-awesome/icons/filter';
 	import spinner from 'svelte-awesome/icons/spinner';
 	import Icon from 'svelte-awesome';
 	import { onMount } from 'svelte';
@@ -84,7 +84,7 @@
 	<div class="space-y-10 text-center flex flex-col items-center w-full">
 		<h1>My Recipes</h1>
 		<div class="input-group input-group-divider grid-cols-[auto_1fr_auto] max-w-[40rem]">
-			<div class="input-group-shim"><Icon data={search} /></div>
+			<div class="input-group-shim"><Icon data={filter} /></div>
 			<input type="search" bind:value={searchKeyword} placeholder="Filter by name..." />
 		</div>
 		{#if fetching}
