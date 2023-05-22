@@ -11,7 +11,7 @@
 	import search from 'svelte-awesome/icons/search';
 
 	let recipes: App.Recipe[] = [];
-	let list: string[] = ['apple'];
+	let list: string[] = ['cranberry'];
 	let loading: boolean = false;
 
 	$: recipesCount = recipes.length;
