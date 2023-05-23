@@ -55,8 +55,7 @@
 				.select('*', { count: 'exact', head: true })
 				.eq('recipe_id', recipe.id);
 
-			recipe.totalLikes = (recipe.likes ? recipe.likes : recipe.aggregateLikes) + count;
-			console.log(recipe);
+			recipe.totalLikes = (recipe.likes !== undefined ? recipe.likes : recipe.aggregateLikes) + count;
 		}
 	};
 
@@ -68,7 +67,7 @@
 
 		try {
 			changingFav = true;
-			recipe.totalLikes = recipe.likes + (recipe.bookmarked ? -1 : 1);
+			recipe.totalLikes = (recipe.likes !== undefined ? recipe.likes : recipe.aggregateLikes) + (recipe.bookmarked ? -1 : 1);
 			recipe.bookmarked = !recipe.bookmarked;
 			if (recipe.bookmarked) {
 				console.log('Liking..');
