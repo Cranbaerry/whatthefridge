@@ -124,16 +124,37 @@ export const actions: Actions = {
 		request,
 	}): Promise<ActionFailure<{ error: string }> | { recipes: App.Recipe[] }> {
 		const formData = await request.formData();
+		const type = formData.get('type') as string;
 		const ingredients = (formData.getAll('ingredients') as string[]).join(',');
-		const response = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=30&ranking=2&ignorePantry=true&apiKey=${PRIVATE_SPOONACULAR_KEY}`)
+		const title = formData.get('title') as string;
+		let response:any;
+		
+		if (type === 'ingredients') {
+			if (!ingredients) {
+				return fail(400, {
+					error: 'Please enter at least one ingredient'
+				});
+			}
+
+			response = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=20&ranking=2&ignorePantry=true&apiKey=${PRIVATE_SPOONACULAR_KEY}`)
+		} else  {
+			if (!title) {
+				return fail(400, {
+					error: 'Please enter a title'
+				});
+			}
+
+			response = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${title}&number=20&addRecipeInformation=true&apiKey=${PRIVATE_SPOONACULAR_KEY}`);
+		}
 
 		if (response.status === 200) {
+			let res:any = await response.json();
 			return {
-				recipes: await response.json(),
+				recipes: type === 'ingredients' ? res : res.results,
 			};
 		} else {
 			return fail(500, {
-				error: 'External API request failed. Try again later.'
+				error: response.statusText || 'External API request failed. Try again later.'
 			});
 		}
 	},

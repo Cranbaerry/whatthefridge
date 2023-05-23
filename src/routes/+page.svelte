@@ -9,10 +9,13 @@
 	import Icon from 'svelte-awesome';
 	import spinner from 'svelte-awesome/icons/spinner';
 	import search from 'svelte-awesome/icons/search';
+	import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
 
 	let recipes: App.Recipe[] = [];
 	let list: string[] = ['cranberry'];
 	let loading: boolean = false;
+	let searchBy: 'ingredients' | 'name' = 'ingredients';
+	let searchByNameValue:string;
 
 	$: recipesCount = recipes.length;
 	$: paginatorSettings = {
@@ -28,7 +31,7 @@
 
 	const handleRecipes: SubmitFunction = () => {
 		loading = true;
-		return async ({ result }) => {			
+		return async ({ result }) => {
 			if (result.type === 'success') {
 				let t: ToastSettings;
 				recipes = result.data?.recipes;
@@ -62,23 +65,41 @@
 	};
 </script>
 
-<div class="container h-full mx-auto py-3 lg:py-10  px-5 flex flex-col justify-center items-center">
+<div class="container h-full mx-auto py-3 lg:py-10 px-5 flex flex-col justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<!-- Animated Logo -->
 		<figure class="max-w-[45rem]">
 			<!-- <section class="img-bg" /> -->
-			<img src={logo} alt="WhatTheFridge"  />
+			<img src={logo} alt="WhatTheFridge" />
 			<h3>Find out what you can make, with what you have!</h3>
 		</figure>
 		<!-- / -->
 		<form action="?/fetchRecipes" method="post" class="w-full" use:enhance={handleRecipes}>
-			<InputChip
-				bind:value={list}
-				chips="variant-filled-primary"
-				name="ingredients"
-				placeholder="Enter any ingredients..."
-				padding="p-3"
-			/>
+			{#if searchBy === 'ingredients'}
+				<InputChip
+					bind:value={list}
+					chips="variant-filled-primary"
+					name="ingredients"
+					placeholder="Enter any ingredients..."
+					padding="p-3"
+				/>
+			{:else}
+				<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
+					<div class="input-group-shim"><Icon data={search} /></div>
+					<input type="search" bind:value={searchByNameValue} placeholder="Enter a recipe name..." />
+				</div>
+				<input type="hidden" name="title" bind:value={searchByNameValue} />
+			{/if}		
+
+			<RadioGroup>
+				<RadioItem bind:group={searchBy} name="type" value={'ingredients'}
+					>Search by ingredients</RadioItem
+				>
+				<RadioItem bind:group={searchBy} name="type" value={'name'}
+					>Search by keywords</RadioItem
+				>
+			</RadioGroup>
+			
 
 			<div class="flex justify-center space-x-2 mt-7">
 				<button class="btn variant-filled" disabled={loading} type="submit">
@@ -97,7 +118,7 @@
 		<div class="mx-10 mt-10 w-full text-token grid grid-cols-1 lg:grid-cols-4 gap-8">
 			{#each paginatedRecipes as recipe}
 				{#key recipe}
-					<FoodCard recipe={recipe} />
+					<FoodCard {recipe} />
 				{/key}
 			{/each}
 		</div>

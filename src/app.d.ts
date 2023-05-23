@@ -35,6 +35,7 @@ declare global {
 			image: string;
 			imageType: string;
 			likes: number;
+			aggregateLikes?: number;
 			missedIngredientCount: number;
 			missedIngredients: Ingredient[];
 			title: string;

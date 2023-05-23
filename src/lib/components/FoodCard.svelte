@@ -55,7 +55,8 @@
 				.select('*', { count: 'exact', head: true })
 				.eq('recipe_id', recipe.id);
 
-			recipe.totalLikes = recipe.likes + count;
+			recipe.totalLikes = (recipe.likes ? recipe.likes : recipe.aggregateLikes) + count;
+			console.log(recipe);
 		}
 	};
 
