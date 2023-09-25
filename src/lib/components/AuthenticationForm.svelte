@@ -12,6 +12,7 @@
 	import { page } from '$app/stores';
 	import StatusMessage from './StatusMessage.svelte';
 	import { goto } from '$app/navigation';
+	import { apiConfig } from '../../apiConfig';
 
 	let tabSet: number = $modalStore[0].meta.tabSet ?? 0;
 	let redirect: string = $modalStore[0].meta.redirect ?? undefined;
@@ -131,15 +132,10 @@
 						</label>
 
 						<footer class="modal-footer w-full">
-							<!-- <button
-								class="btn {parent.buttonNeutral}"
-								on:click|preventDefault={parent.onClose}
-								type="button">{parent.buttonTextCancel}</button
-							> -->
 							<button
 								class="btn {parent.buttonPositive} w-full"
 								disabled={form.loading}
-								formaction="/.?/login"
+								formaction="{apiConfig.auth.login}"
 								type="submit">Sign In</button
 							>
 						</footer>

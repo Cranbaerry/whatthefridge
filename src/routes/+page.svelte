@@ -1,5 +1,4 @@
 <script lang="ts">
-	// import logo from '$lib/assets/logo.svg';
 	import logo from '$lib/assets/wtf.png';
 	import { InputChip, Paginator } from '@skeletonlabs/skeleton';
 	import FoodCard from '$lib/components/FoodCard.svelte';
