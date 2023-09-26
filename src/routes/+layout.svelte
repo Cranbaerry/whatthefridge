@@ -28,7 +28,7 @@
 	import home from 'svelte-awesome/icons/home';
 	import { goto } from '$app/navigation';
 	import edit from 'svelte-awesome/icons/edit';
-	import user from 'svelte-awesome/icons/user';
+	import userIcon from 'svelte-awesome/icons/user';
 	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { LayoutData } from './$types';
@@ -42,26 +42,27 @@
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import refrigerator from '$lib/assets/fridge-icon.svg';
 	import { redirect } from '@sveltejs/kit';
-	
 
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	export let data: LayoutData;
 
-	$: ({ supabase, session } = data);
+	$: ({ session } = data);
+
 	$: username = session?.user?.email?.split('@')[0];
+	// console.log('token', token);
+	
 	$: logoDisplayClass = $page.url.pathname === '/' ? 'hidden' : 'block';
 
 	onMount(() => {
-		const {
-			data: { subscription }
-		} = supabase.auth.onAuthStateChange((event, _session) => {
-			if (_session?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth');
-			}
-		});
-
-		return () => subscription.unsubscribe();
+		// const {
+		// 	data: { subscription }
+		// } = supabase.auth.onAuthStateChange((event, _session) => {
+		// 	if (_session?.expires_at !== session?.expires_at) {
+		// 		invalidate('supabase:auth');
+		// 	}
+		// });
+		// return () => subscription.unsubscribe();
 	});
 
 	const navigateToDashboard = () => {
@@ -72,9 +73,9 @@
 				background: 'variant-filled-warning',
 				action: {
 					label: 'Sign In',
-					response: () => showModalAuth('/dashboard'),
+					response: () => showModalAuth('/dashboard')
 				}
-			});			
+			});
 		}
 	};
 
@@ -249,7 +250,12 @@
 <AppShell>
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
-		<AppBar background="transparent" gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
+		<AppBar
+			background="transparent"
+			gridColumns="grid-cols-3"
+			slotDefault="place-self-center"
+			slotTrail="place-content-end"
+		>
 			<svelte:fragment slot="lead">
 				<!-- Desktop -->
 				<div class="flex items-center">
@@ -297,7 +303,7 @@
 									<li>
 										<button class="!inline-block !font-normal !cursor-not-allowed" disabled>
 											<span class="w-6">
-												<Icon data={user} scale={1.5} class="mr-2" />
+												<Icon data={userIcon} scale={1.5} class="mr-2" />
 												<span>Manage Account</span>
 											</span>
 										</button>
@@ -313,6 +319,7 @@
 								</li>
 								<hr class="!my-4" />
 								<li>
+									
 									{#if session?.user}
 										<form action="/.?/logout" method="post" use:enhance={handleLogout}>
 											<button class="!inline-block !font-normal" type="submit">
@@ -345,9 +352,13 @@
 					</a>
 				</div>
 			</svelte:fragment>
-			
+
 			<a href="/">
-				<img src={logo} alt="WhatTheFridge" class="lg:!ml-0 w-[200px] overflow-hidden {logoDisplayClass}"/>
+				<img
+					src={logo}
+					alt="WhatTheFridge"
+					class="lg:!ml-0 w-[200px] overflow-hidden {logoDisplayClass}"
+				/>
 			</a>
 			<svelte:fragment slot="trail">
 				<button
@@ -405,7 +416,7 @@
 									<li>
 										<button class="!inline-block !font-normal !cursor-not-allowed" disabled>
 											<span class="w-6">
-												<Icon data={user} scale={1.5} class="mr-2" />
+												<Icon data={userIcon} scale={1.5} class="mr-2" />
 												<span>Manage Account</span>
 											</span>
 										</button>
@@ -429,7 +440,7 @@
 						class="btn hover:variant-soft-primary !font-normal hidden lg:block"
 						on:click={() => showModalAuth()}
 					>
-						Sign In
+						Sign In 
 					</button>
 				{/if}
 			</svelte:fragment>

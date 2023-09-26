@@ -5,9 +5,9 @@
 
 	// Imports
 	import { modalStore, TabGroup, Tab } from '@skeletonlabs/skeleton';
-	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
+	import { applyAction, enhance, deserialize } from '$app/forms';
 	import { onMount } from 'svelte';
-	import { invalidate } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
 	import { toastStore } from '@skeletonlabs/skeleton';
 	import { page } from '$app/stores';
 	import StatusMessage from './StatusMessage.svelte';
@@ -31,34 +31,48 @@
 		success: null
 	};
 
-	const handleSubmit: SubmitFunction = () => {
+	
+	/** @type {import('./$types').LayoutData} */
+	export let data;
+	console.log(data);
+	
+
+	/** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
+	async function handleSubmitV2(event: any) {
 		form.loading = true;
-		return async ({ result }) => {
-			if (result.type === 'failure') {
-				form.error = result.data?.error;
-			}
+		const data = new FormData(event.currentTarget);
+		const response = await fetch(event.currentTarget.action, {
+			method: 'POST',
+			body: data
+		});
 
-			if (result.type === 'success') {
-				if (result.data?.login) {
-					await invalidate('supabase:auth');
-					parent.onClose();
-					toastStore.trigger({
-						message: 'Welcome back, ' + $page.data.session?.user.email + '!',
-						background: 'variant-filled-success'
-					});
+		// Concern: JSON.parse() isn't enough because form actions - like load functions - also support returning Date or BigInt objects.
+		const result =  await response.json();
 
-					if (redirect) {
-						goto(redirect);
-					}
-				} else {
-					form.success = result.data?.message;
+		if (result.type == 'failure') {
+			form.error = result.data?.error;
+		} else if (result.type === 'success') {
+			if (result.data?.login) {
+				await invalidateAll();
+				parent.onClose();
+				toastStore.trigger({
+					message: 'Welcome back, ' + result.data.user.email + '!',
+					background: 'variant-filled-success'
+				});
+
+				document.cookie = 'sb-auth-token=' + result.data.token + '; path=/; SameSite=Strict; Secure';
+
+				if (redirect) {
+					goto(redirect);
 				}
+			} else {
+				form.success = result.data?.message;
 			}
+		}
 
-			await applyAction(result);
-			form.loading = false;
-		};
-	};
+		applyAction(result);
+		form.loading = false;
+	}
 
 	onMount(async () => {
 		form.email = '';
@@ -107,7 +121,8 @@
 					<form
 						class="px-3 modal-form space-y-4 rounded-container-token"
 						method="POST"
-						use:enhance={handleSubmit}
+						action={apiConfig.auth.login}
+						on:submit|preventDefault={handleSubmitV2}
 						autocomplete="off"
 					>
 						<label class="label">
@@ -135,7 +150,7 @@
 							<button
 								class="btn {parent.buttonPositive} w-full"
 								disabled={form.loading}
-								formaction="{apiConfig.auth.login}"
+								formaction={apiConfig.auth.login}
 								type="submit">Sign In</button
 							>
 						</footer>
@@ -146,7 +161,11 @@
 							<span class="h-[1px] w-full bg-surface-300-600-token" />
 						</span>
 
-						<form class="flex flex-col gap-2 pb-2" method="POST" use:enhance={handleSubmit}>
+						<form
+							class="flex flex-col gap-2 pb-2"
+							method="POST"
+							on:submit|preventDefault={handleSubmitV2}
+						>
 							<button
 								class="btn variant-ringed-surface flex gap-2"
 								formaction="/.?/loginOAuth&amp;provider=google"
@@ -219,7 +238,7 @@
 					<form
 						class="px-3 modal-form space-y-4 rounded-container-token"
 						method="POST"
-						use:enhance={handleSubmit}
+						on:submit|preventDefault={handleSubmitV2}
 						autocomplete="off"
 					>
 						<label class="label">
