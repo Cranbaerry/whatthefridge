@@ -9,12 +9,14 @@
 	import spinner from 'svelte-awesome/icons/spinner';
 	import search from 'svelte-awesome/icons/search';
 	import { RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
+	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	let recipes: App.Recipe[] = [];
 	let list: string[] = ['cranberry'];
 	let loading: boolean = false;
 	let searchBy: 'ingredients' | 'name' = 'ingredients';
-	let searchByNameValue:string;
+	let searchByNameValue: string;
 
 	$: recipesCount = recipes.length;
 	$: paginatorSettings = {
@@ -27,6 +29,16 @@
 		paginatorSettings.offset * paginatorSettings.limit,
 		paginatorSettings.offset * paginatorSettings.limit + paginatorSettings.limit
 	);
+
+	onMount(async () => {
+		if (location.hash.indexOf('#access_token=') > -1) {
+			const token = new URLSearchParams(document.location.hash.slice(1)).get('access_token');
+			document.cookie = 'sb-auth-token=' + token + '; path=/; SameSite=Strict; Secure';
+			await invalidateAll();
+			const cleanedUrl = window.location.href.split('#')[0];
+			window.history.replaceState(null, '', cleanedUrl);
+		}
+	});
 
 	const handleRecipes: SubmitFunction = () => {
 		loading = true;
@@ -85,20 +97,21 @@
 			{:else}
 				<div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
 					<div class="input-group-shim"><Icon data={search} /></div>
-					<input type="search" bind:value={searchByNameValue} placeholder="Enter a recipe name..." />
+					<input
+						type="search"
+						bind:value={searchByNameValue}
+						placeholder="Enter a recipe name..."
+					/>
 				</div>
 				<input type="hidden" name="title" bind:value={searchByNameValue} />
-			{/if}		
+			{/if}
 
 			<RadioGroup>
 				<RadioItem bind:group={searchBy} name="type" value={'ingredients'}
 					>Search by ingredients</RadioItem
 				>
-				<RadioItem bind:group={searchBy} name="type" value={'name'}
-					>Search by keywords</RadioItem
-				>
+				<RadioItem bind:group={searchBy} name="type" value={'name'}>Search by keywords</RadioItem>
 			</RadioGroup>
-			
 
 			<div class="flex justify-center space-x-2 mt-7">
 				<button class="btn variant-filled" disabled={loading} type="submit">

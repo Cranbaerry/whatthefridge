@@ -7,15 +7,14 @@
 	import { modalStore, TabGroup, Tab } from '@skeletonlabs/skeleton';
 	import { applyAction, enhance, deserialize } from '$app/forms';
 	import { onMount } from 'svelte';
-	import { invalidate, invalidateAll } from '$app/navigation';
+	import {  invalidateAll } from '$app/navigation';
 	import { toastStore } from '@skeletonlabs/skeleton';
-	import { page } from '$app/stores';
 	import StatusMessage from './StatusMessage.svelte';
 	import { goto } from '$app/navigation';
 	import { apiConfig } from '../../apiConfig';
 
 	let tabSet: number = $modalStore[0].meta.tabSet ?? 0;
-	let redirect: string = $modalStore[0].meta.redirect ?? undefined;
+	// let redirect: string = $modalStore[0].meta.redirect ?? undefined;
 
 	const form: {
 		email: string;
@@ -31,41 +30,39 @@
 		success: null
 	};
 
-
-
 	/** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
 	async function handleSubmitV2(event: any) {
 		form.loading = true;
 		const data = new FormData(event.currentTarget);
-		const response = await fetch(event.currentTarget.action, {
-			method: 'POST',
-			body: data
+		const response = await fetch(event.submitter.getAttribute('formaction'), {
+			method: event.submitter.getAttribute('formmethod'),
+			body:  event.submitter.getAttribute('formmethod') === 'GET' ? null: data
 		});
 
 		// Concern: JSON.parse() isn't enough because form actions - like load functions - also support returning Date or BigInt objects.
-		const result =  await response.json();
+		const result = await response.json();
 
 		if (result.type == 'failure') {
 			form.error = result.data?.error;
 		} else if (result.type === 'success') {
 			if (result.data?.login) {
-				document.cookie = 'sb-auth-token=' + result.data.token + '; path=/; SameSite=Strict; Secure';
+				document.cookie =
+					'sb-auth-token=' + result.data.token + '; path=/; SameSite=Strict; Secure';
 				await invalidateAll();
 				parent.onClose();
 				toastStore.trigger({
 					message: 'Welcome back, ' + result.data.user.email + '!',
 					background: 'variant-filled-success'
 				});
-
-				if (redirect) {
-					goto(redirect);
-				}
 			} else {
 				form.success = result.data?.message;
 			}
-		}
 
-		applyAction(result);
+			applyAction(result);
+		} else if (result.type === 'redirect') {
+			goto(result.data?.url ?? '/');
+		} 
+
 		form.loading = false;
 	}
 
@@ -115,8 +112,6 @@
 					{/if}
 					<form
 						class="px-3 modal-form space-y-4 rounded-container-token"
-						method="POST"
-						action={apiConfig.auth.login}
 						on:submit|preventDefault={handleSubmitV2}
 						autocomplete="off"
 					>
@@ -146,6 +141,7 @@
 								class="btn {parent.buttonPositive} w-full"
 								disabled={form.loading}
 								formaction={apiConfig.auth.login}
+								formmethod="POST"
 								type="submit">Sign In</button
 							>
 						</footer>
@@ -156,14 +152,11 @@
 							<span class="h-[1px] w-full bg-surface-300-600-token" />
 						</span>
 
-						<form
-							class="flex flex-col gap-2 pb-2"
-							method="POST"
-							on:submit|preventDefault={handleSubmitV2}
-						>
+						<div class="flex flex-col gap-2 pb-2">
 							<button
 								class="btn variant-ringed-surface flex gap-2"
-								formaction="/.?/loginOAuth&amp;provider=google"
+								formaction={apiConfig.auth.google}
+								formmethod="GET"
 							>
 								<svg
 									class="w-7 aspect-square"
@@ -200,7 +193,8 @@
 							</button>
 							<button
 								class="btn variant-ringed-surface flex gap-2"
-								formaction="/.?/loginOAuth&amp;provider=discord"
+								formaction={apiConfig.auth.discord}
+								formmethod="GET"
 							>
 								<svg
 									class="w-7 aspect-square"
@@ -222,7 +216,7 @@
 								</svg>
 								Sign in with Discord
 							</button>
-						</form>
+						</div>
 					</form>
 				{:else if tabSet === 1}
 					{#if form.success}
@@ -232,7 +226,6 @@
 					{/if}
 					<form
 						class="px-3 modal-form space-y-4 rounded-container-token"
-						method="POST"
 						on:submit|preventDefault={handleSubmitV2}
 						autocomplete="off"
 					>
@@ -266,7 +259,8 @@
 							<button
 								class="btn {parent.buttonPositive}"
 								disabled={form.loading}
-								formaction="/.?/register"
+								formaction={apiConfig.auth.register}
+								formmethod="POST"
 								type="submit">Sign up</button
 							>
 						</footer>

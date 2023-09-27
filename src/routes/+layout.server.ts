@@ -5,7 +5,6 @@ import { apiConfig } from '../apiConfig';
 export async function load({ cookies }) {
     const getSession = async () => {        
         const token = cookies.get('sb-auth-token');
-        console.log('loaaaad', token);
         if (token) {
             const response = await fetch(apiConfig.auth.session, {
                 method: 'GET',

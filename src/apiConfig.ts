@@ -6,7 +6,10 @@ export module apiConfig {
     export const auth = {
       login: `${baseApiUrl}/api/auth/login`,
       logout: `${baseApiUrl}/api/auth/logout`,
+      register: `${baseApiUrl}/api/auth/register`,
       session: `${baseApiUrl}/api/auth/session`,
+      google: `${baseApiUrl}/api/auth/google`,
+      discord: `${baseApiUrl}/api/auth/discord`,
     };
   
     // Add more endpoints as needed
