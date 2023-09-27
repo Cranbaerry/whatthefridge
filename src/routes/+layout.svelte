@@ -29,7 +29,7 @@
 	import { goto } from '$app/navigation';
 	import edit from 'svelte-awesome/icons/edit';
 	import userIcon from 'svelte-awesome/icons/user';
-	import { invalidate } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { LayoutData } from './$types';
 	import signOut from 'svelte-awesome/icons/signOut';
@@ -42,6 +42,7 @@
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import refrigerator from '$lib/assets/fridge-icon.svg';
 	import { redirect } from '@sveltejs/kit';
+	import { apiConfig } from '../apiConfig';
 
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -50,11 +51,11 @@
 	$: ({ session } = data);
 
 	$: username = session?.user?.email?.split('@')[0];
-	// console.log('token', token);
-	
 	$: logoDisplayClass = $page.url.pathname === '/' ? 'hidden' : 'block';
 
 	onMount(() => {
+		// on cookie change
+		//document.
 		// const {
 		// 	data: { subscription }
 		// } = supabase.auth.onAuthStateChange((event, _session) => {
@@ -93,21 +94,38 @@
 	};
 
 	let loading: boolean = false;
-	const handleLogout: SubmitFunction = () => {
+
+	/** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
+	async function handleLogoutV2(event: any) {
 		loading = true;
-		return async ({ result }) => {
-			if (result.type === 'redirect') {
-				await invalidate('supabase:auth');
-				toastStore.trigger({
-					message: 'You have been logged out. See you soon!',
-					background: 'variant-filled-secondary'
-				});
-			} else {
-				await applyAction(result);
+		const data = new FormData(event.currentTarget);
+		const response = await fetch(event.currentTarget.action, {
+			method: 'POST',
+			body: data,
+			headers: {
+				Authorization: `Bearer ${session.token}`
 			}
-			loading = false;
-		};
-	};
+		});
+
+		// Concern: JSON.parse() isn't enough because form actions - like load functions - also support returning Date or BigInt objects.
+		const result = await response.json();
+
+		if (result.type == 'failure') {
+			toastStore.trigger({
+				message: `Whoops, something went wrong! ${result.data.message}`,
+				background: 'variant-filled-error'
+			});
+		} else if (result.type === 'success') {
+			document.cookie = 'sb-auth-token=; Max-Age=0';
+			await invalidateAll();
+			toastStore.trigger({
+				message: 'You have been logged out. See you soon!',
+				background: 'variant-filled-secondary'
+			});			
+		}
+
+		await applyAction(result);
+	}
 
 	const removePlaceholder = (e: any) => {
 		const placeholder = e.target.parentElement;
@@ -319,9 +337,12 @@
 								</li>
 								<hr class="!my-4" />
 								<li>
-									
 									{#if session?.user}
-										<form action="/.?/logout" method="post" use:enhance={handleLogout}>
+										<form
+											action={apiConfig.auth.logout}
+											method="post"
+											on:submit|preventDefault={handleLogoutV2}
+										>
 											<button class="!inline-block !font-normal" type="submit">
 												<Icon data={signOut} scale={1.5} class="mr-2" />
 												Sign out
@@ -423,7 +444,11 @@
 									</li>
 									<hr class="!my-4" />
 									<li>
-										<form action="/.?/logout" method="post" use:enhance={handleLogout}>
+										<form
+											action={apiConfig.auth.logout}
+											method="post"
+											on:submit|preventDefault={handleLogoutV2}
+										>
 											<button class="!inline-block !font-normal" type="submit">
 												<Icon data={signOut} scale={1.5} class="mr-2" />
 												Sign out
@@ -440,7 +465,7 @@
 						class="btn hover:variant-soft-primary !font-normal hidden lg:block"
 						on:click={() => showModalAuth()}
 					>
-						Sign In 
+						Sign In
 					</button>
 				{/if}
 			</svelte:fragment>

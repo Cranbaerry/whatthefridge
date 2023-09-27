@@ -3,8 +3,9 @@ import { apiConfig } from '../apiConfig';
 
 /** @type {import('./$types').LayoutServerLoad} */
 export async function load({ cookies }) {
-    const getSession = async () => {
+    const getSession = async () => {        
         const token = cookies.get('sb-auth-token');
+        console.log('loaaaad', token);
         if (token) {
             const response = await fetch(apiConfig.auth.session, {
                 method: 'GET',
@@ -22,11 +23,11 @@ export async function load({ cookies }) {
             }
         }
 
-        return [undefined, undefined];
+        return [null, null];
     };
 
-    const { token, user }= await getSession();
-    const session = { user: user || null, token: token || null };
+    const { token, user } = await getSession();
+    const session: App.Session = { user: user , token: token };
     return { session };
 }
 

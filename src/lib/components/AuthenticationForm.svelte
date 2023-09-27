@@ -31,11 +31,7 @@
 		success: null
 	};
 
-	
-	/** @type {import('./$types').LayoutData} */
-	export let data;
-	console.log(data);
-	
+
 
 	/** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
 	async function handleSubmitV2(event: any) {
@@ -53,14 +49,13 @@
 			form.error = result.data?.error;
 		} else if (result.type === 'success') {
 			if (result.data?.login) {
+				document.cookie = 'sb-auth-token=' + result.data.token + '; path=/; SameSite=Strict; Secure';
 				await invalidateAll();
 				parent.onClose();
 				toastStore.trigger({
 					message: 'Welcome back, ' + result.data.user.email + '!',
 					background: 'variant-filled-success'
 				});
-
-				document.cookie = 'sb-auth-token=' + result.data.token + '; path=/; SameSite=Strict; Secure';
 
 				if (redirect) {
 					goto(redirect);
