@@ -11,6 +11,10 @@ export module apiConfig {
       google: `${baseApiUrl}/api/auth/google`,
       discord: `${baseApiUrl}/api/auth/discord`,
     };
+
+    export const recipes = {
+      searchRecipes: `${baseApiUrl}/api/recipes/search`,
+    };
   
     // Add more endpoints as needed
   }

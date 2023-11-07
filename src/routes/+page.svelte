@@ -17,6 +17,7 @@
 	let loading: boolean = false;
 	let searchBy: 'ingredients' | 'name' = 'ingredients';
 	let searchByNameValue: string;
+	import { apiConfig } from '$lib/apiConfig';
 
 	$: recipesCount = recipes.length;
 	$: paginatorSettings = {
@@ -40,9 +41,55 @@
 		}
 	});
 
+	/** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
+	async function handleSearchV2(event: any) {
+		loading = true;
+		const data = new FormData(event.currentTarget);
+		const response = await fetch(event.currentTarget.action, {
+			method: 'POST',
+			body: data
+		});
+
+		// Concern: JSON.parse() isn't enough because form actions - like load functions - also support returning Date or BigInt objects.
+		const result = await response.json();
+
+		if (result.type === 'success') {
+			let t: ToastSettings;
+			recipes = result.data?.recipes;
+			if (recipes.length === 0) {
+				t = {
+					message: `Sorry, we couldn't find any recipes with those ingredients.. 😢`,
+					background: 'variant-filled-error'
+				};
+			} else {
+				t = {
+					message: `We have found ${recipes.length} recipes for you to try! 😋`,
+					background: 'variant-filled-tertiary'
+				};
+			}
+
+			await applyAction(result);
+			await invalidateAll();
+			toastStore.trigger(t);
+		} else if (result.type === 'error') {
+			toastStore.trigger({
+				message: `Something went wrong. Please try again later.`,
+				background: 'variant-filled-error'
+			});
+		} else if (result.type === 'failure') {
+			toastStore.trigger({
+				message: result.data?.error,
+				background: 'variant-filled-error'
+			});
+		}
+
+		loading = false;
+	}
+
 	const handleRecipes: SubmitFunction = () => {
 		loading = true;
 		return async ({ result }) => {
+			console.log('type', result.type);
 			if (result.type === 'success') {
 				let t: ToastSettings;
 				recipes = result.data?.recipes;
@@ -85,12 +132,17 @@
 			<h3>Find out what you can make, with what you have!</h3>
 		</figure>
 		<!-- / -->
-		<form action="?/fetchRecipes" method="post" class="w-full" use:enhance={handleRecipes}>
+		<form
+			action={apiConfig.recipes.searchRecipes}
+			method="post"
+			class="w-full"
+			on:submit|preventDefault={handleSearchV2}
+		>
 			{#if searchBy === 'ingredients'}
 				<InputChip
 					bind:value={list}
 					chips="variant-filled-primary"
-					name="ingredients"
+					name="ingredients[]"
 					placeholder="Enter any ingredients..."
 					padding="p-3"
 				/>

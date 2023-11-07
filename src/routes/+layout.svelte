@@ -42,7 +42,7 @@
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import refrigerator from '$lib/assets/fridge-icon.svg';
 	import { redirect } from '@sveltejs/kit';
-	import { apiConfig } from '../apiConfig';
+	import { apiConfig } from '../lib/apiConfig';
 
 	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 

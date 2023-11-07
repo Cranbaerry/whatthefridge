@@ -1,5 +1,5 @@
 
-import { apiConfig } from '../apiConfig';
+import { apiConfig } from '../lib/apiConfig';
 
 /** @type {import('./$types').LayoutServerLoad} */
 export async function load({ cookies }) {
