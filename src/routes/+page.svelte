@@ -18,6 +18,11 @@
 	let searchBy: 'ingredients' | 'name' = 'ingredients';
 	let searchByNameValue: string;
 	import { apiConfig } from '$lib/apiConfig';
+	import type { LayoutData } from './$types';
+
+	export let data: LayoutData;
+
+	$: ({ session } = data);
 
 	$: recipesCount = recipes.length;
 	$: paginatorSettings = {
@@ -47,7 +52,10 @@
 		const data = new FormData(event.currentTarget);
 		const response = await fetch(event.currentTarget.action, {
 			method: 'POST',
-			body: data
+			body: data,
+			headers: {
+				Authorization: `Bearer ${session.token}`
+			}
 		});
 
 		// Concern: JSON.parse() isn't enough because form actions - like load functions - also support returning Date or BigInt objects.

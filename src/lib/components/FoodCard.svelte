@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { error } from '@sveltejs/kit';
 	import Icon from 'svelte-awesome';
 	import heart from 'svelte-awesome/icons/heart';
 	import spinner from 'svelte-awesome/icons/spinner';
@@ -7,6 +8,7 @@
 	import { drawerStore, toastStore } from '@skeletonlabs/skeleton';
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import { page } from '$app/stores';
+	import { apiConfig } from '$lib/apiConfig';
 	import Lazy from 'svelte-lazy';
 
 	// @ts-ignore
@@ -14,7 +16,7 @@
 
 	export let recipe: App.Recipe;
 	export let recipeDetail: App.RecipeDetail | undefined = undefined;
-	
+
 	let loading: boolean = false;
 	let changingFav: boolean = false;
 	let placeholderElement: HTMLElement;
@@ -22,7 +24,7 @@
 		placeholderElement.removeAttribute('data-placeholder');
 	};
 
-	$: ({ supabase, session } = $page.data);
+	$: ({ session } = $page.data);
 	$: bouncingHeart = changingFav ? 'animate-bounce' : '';
 	$: fillHeart = recipe.bookmarked ? '!fill-red-500' : '';
 	$: if (!session?.user) {
@@ -33,16 +35,27 @@
 
 	const setBookmarkState = async () => {
 		try {
-			if (!session?.user) return;
+			// console.log('Getting bookmark state for recipe id: ', recipe.id);
+			const response = await fetch(`${apiConfig.recipes.getBookmarkState}/${recipe.id}`, {
+				method: 'GET'
+			});
 
-			const { count, error } = await supabase
-				.from('favourites')
-				.select('*', { count: 'exact', head: true })
-				.eq('recipe_id', recipe.id)
-				.eq('user_id', session?.user.id);
+			const result = await response.json();
+			if (result.type === 'success') {
+				// loop through result.data.rows and check if user has liked the recipe
+				if (session?.user) {
+					for (var likeData of result.data?.rows) {
+						if (likeData.user_id === recipe.id) {
+							recipe.bookmarked = true;
+							break;
+						}
+					}
+				}
 
-			if (error) throw error;
-			recipe.bookmarked = !count ? false : true;
+				recipe.totalLikes = result.data?.count;
+			} else {
+				throw result.data.error;
+			}
 		} catch (error) {
 			toastStore.trigger({
 				message: error as string,
@@ -50,12 +63,13 @@
 			});
 		} finally {
 			// Combine Spooncular likes with Supabase likes =)
-			const { count } = await supabase
-				.from('favourites')
-				.select('*', { count: 'exact', head: true })
-				.eq('recipe_id', recipe.id);
-
-			recipe.totalLikes = (recipe.likes !== undefined ? recipe.likes : recipe.aggregateLikes) + count;
+			// Disabled because Spoonacular api limits
+			// const { count } = await supabase
+			// 	.from('favourites')
+			// 	.select('*', { count: 'exact', head: true })
+			// 	.eq('recipe_id', recipe.id);
+			// recipe.totalLikes =
+			// 	(recipe.likes !== undefined ? recipe.likes : recipe.aggregateLikes) + count;
 		}
 	};
 
@@ -67,34 +81,36 @@
 
 		try {
 			changingFav = true;
-			recipe.totalLikes = (recipe.likes !== undefined ? recipe.likes : recipe.aggregateLikes) + (recipe.bookmarked ? -1 : 1);
+			recipe.totalLikes =
+				(recipe.likes !== undefined ? recipe.likes : recipe.aggregateLikes) +
+				(recipe.bookmarked ? -1 : 1);
 			recipe.bookmarked = !recipe.bookmarked;
 			if (recipe.bookmarked) {
 				console.log('Liking..');
-				const { data, error } = await supabase
-					.from('favourites')
-					.insert({ recipe_id: recipe.id, user_id: session?.user.id });
+				// const { data, error } = await supabase
+				// 	.from('favourites')
+				// 	.insert({ recipe_id: recipe.id, user_id: session?.user.id });
 				if (error) {
 					throw error;
 				}
 			} else {
 				console.log('Unliking..');
-				const { data, error } = await supabase
-					.from('favourites')
-					.delete()
-					.eq('recipe_id', recipe.id)
-					.eq('user_id', session?.user.id);
+				// const { data, error } = await supabase
+				// 	.from('favourites')
+				// 	.delete()
+				// 	.eq('recipe_id', recipe.id)
+				// 	.eq('user_id', session?.user.id);
 				if (error) {
 					throw error;
 				}
 			}
 		} catch (error) {
-			recipe.totalLikes = recipe.likes + (recipe.bookmarked ? -1 : 1);
-			recipe.bookmarked = !recipe.bookmarked;
-			toastStore.trigger({
-				message: error as string,
-				background: 'variant-filled-error'
-			});
+			// recipe.totalLikes = recipe.likes + (recipe.bookmarked ? -1 : 1);
+			// recipe.bookmarked = !recipe.bookmarked;
+			// toastStore.trigger({
+			// 	message: error as string,
+			// 	background: 'variant-filled-error'
+			// });
 		} finally {
 			changingFav = false;
 		}
@@ -106,7 +122,7 @@
 
 	const handleRecipeDetail: SubmitFunction = ({ cancel }) => {
 		if (recipeDetail) {
-			cancel();	
+			cancel();
 			recipeDetail.summary = stripHtmlTags(recipeDetail.summary);
 			const drawerSettings: DrawerSettings = {
 				id: 'recipe',
@@ -117,7 +133,7 @@
 					recipeInstructions: recipeDetail.steps
 				}
 			};
-			
+
 			return drawerStore.open(drawerSettings);
 		}
 
@@ -148,8 +164,8 @@
 		};
 	};
 
-	const cardFadeOption = {delay: 0, duration: 700};
-	onMount(setBookmarkState);
+	const cardFadeOption = { delay: 0, duration: 700 };
+	// onMount(setBookmarkState);
 </script>
 
 <form action="?/fetchRecipeDetail" method="post" use:enhance={handleRecipeDetail}>
@@ -162,7 +178,7 @@
 		>
 			<Lazy height={260} fadeOption={cardFadeOption}>
 				<img
-					on:load={removePlaceholder} 
+					on:load={removePlaceholder}
 					src={recipe.image}
 					class="object-cover !w-full !h-full"
 					alt={recipe.title}
