@@ -14,7 +14,7 @@
 	// @ts-ignore
 	const { showModalAuth } = getContext('authentication');
 
-	export let recipe: App.Recipe;
+
 	export let recipeDetail: App.RecipeDetail | undefined = undefined;
 
 	let loading: boolean = false;
@@ -25,53 +25,39 @@
 	};
 
 	$: ({ session } = $page.data);
+	$: ({ recipe, ...restProps } = $$props);
 	$: bouncingHeart = changingFav ? 'animate-bounce' : '';
 	$: fillHeart = recipe.bookmarked ? '!fill-red-500' : '';
-	$: if (!session?.user) {
-		recipe.bookmarked = false;
-	} else {
-		setBookmarkState();
-	}
 
-	const setBookmarkState = async () => {
-		try {
-			// console.log('Getting bookmark state for recipe id: ', recipe.id);
-			const response = await fetch(`${apiConfig.recipes.getBookmarkState}/${recipe.id}`, {
-				method: 'GET'
-			});
+	// const setBookmarkState = async () => {
+	// 	try {
+	// 		const response = await fetch(`${apiConfig.recipes.getBookmarkState}/${recipe.id}`, {
+	// 			method: 'GET'
+	// 		});
 
-			const result = await response.json();
-			if (result.type === 'success') {
-				// loop through result.data.rows and check if user has liked the recipe
-				if (session?.user) {
-					for (var likeData of result.data?.rows) {
-						if (likeData.user_id === recipe.id) {
-							recipe.bookmarked = true;
-							break;
-						}
-					}
-				}
+	// 		const result = await response.json();
+	// 		if (result.type === 'success') {
+	// 			// loop through result.data.rows and check if user has liked the recipe
+	// 			if (session?.user) {
+	// 				for (var likeData of result.data?.rows) {
+	// 					if (likeData.user_id === session?.user?.id) {
+	// 						recipe.bookmarked = true;
+	// 						break;
+	// 					}
+	// 				}
+	// 			}
 
-				recipe.totalLikes = result.data?.count;
-			} else {
-				throw result.data.error;
-			}
-		} catch (error) {
-			toastStore.trigger({
-				message: error as string,
-				background: 'variant-filled-error'
-			});
-		} finally {
-			// Combine Spooncular likes with Supabase likes =)
-			// Disabled because Spoonacular api limits
-			// const { count } = await supabase
-			// 	.from('favourites')
-			// 	.select('*', { count: 'exact', head: true })
-			// 	.eq('recipe_id', recipe.id);
-			// recipe.totalLikes =
-			// 	(recipe.likes !== undefined ? recipe.likes : recipe.aggregateLikes) + count;
-		}
-	};
+	// 			recipe.totalLikes = result.data?.count;
+	// 		} else {
+	// 			throw result.data.error;
+	// 		}
+	// 	} catch (error) {
+	// 		toastStore.trigger({
+	// 			message: error as string,
+	// 			background: 'variant-filled-error'
+	// 		});
+	// 	}
+	// };
 
 	const toggleFav = async () => {
 		if (!session?.user) {
@@ -81,28 +67,21 @@
 
 		try {
 			changingFav = true;
-			recipe.totalLikes =
-				(recipe.likes !== undefined ? recipe.likes : recipe.aggregateLikes) +
-				(recipe.bookmarked ? -1 : 1);
-			recipe.bookmarked = !recipe.bookmarked;
-			if (recipe.bookmarked) {
-				console.log('Liking..');
-				// const { data, error } = await supabase
-				// 	.from('favourites')
-				// 	.insert({ recipe_id: recipe.id, user_id: session?.user.id });
-				if (error) {
-					throw error;
+			recipe.totalLikes = undefined;
+
+			const response = await fetch(`${apiConfig.recipes.saveRecipe}/${recipe.id}`, {
+				method: 'PUT',
+				headers: {
+					Authorization: `Bearer ${session.token}`
 				}
+			});
+
+			const result = await response.json();
+			if (result.type === 'success') {
+				recipe.bookmarked = result.data?.recipe?.bookmarked;
+				recipe.totalLikes = result.data?.recipe?.totalLikes;
 			} else {
-				console.log('Unliking..');
-				// const { data, error } = await supabase
-				// 	.from('favourites')
-				// 	.delete()
-				// 	.eq('recipe_id', recipe.id)
-				// 	.eq('user_id', session?.user.id);
-				if (error) {
-					throw error;
-				}
+				throw result.data.error;
 			}
 		} catch (error) {
 			// recipe.totalLikes = recipe.likes + (recipe.bookmarked ? -1 : 1);

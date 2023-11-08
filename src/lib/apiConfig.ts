@@ -14,7 +14,8 @@ export module apiConfig {
 
     export const recipes = {
       searchRecipes: `${baseApiUrl}/api/recipes/search`,
-      getBookmarkState: `${baseApiUrl}/api/recipes/bookmarks`,
+      getBookmarks: `${baseApiUrl}/api/recipes/bookmarks`,
+      saveRecipe: `${baseApiUrl}/api/recipes/save`,
     };
   
     // Add more endpoints as needed

@@ -117,11 +117,14 @@
 			});
 		} else if (result.type === 'success') {
 			document.cookie = 'sb-auth-token=; Max-Age=0';
+			session.token = null;
+			session.user = null;
 			await invalidateAll();
 			toastStore.trigger({
 				message: 'You have been logged out. See you soon!',
 				background: 'variant-filled-secondary'
 			});			
+
 		}
 
 		await applyAction(result);

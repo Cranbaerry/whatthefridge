@@ -17,6 +17,7 @@
 	let loading: boolean = false;
 	let searchBy: 'ingredients' | 'name' = 'ingredients';
 	let searchByNameValue: string;
+	let rendered = false;
 	import { apiConfig } from '$lib/apiConfig';
 	import type { LayoutData } from './$types';
 
@@ -36,6 +37,51 @@
 		paginatorSettings.offset * paginatorSettings.limit + paginatorSettings.limit
 	);
 
+	var loginStatus = true;
+	$: if (session?.user) {
+		loginStatus = true;
+	} else {
+		loginStatus = false;
+	}
+
+	$: onLoginStatusChange(loginStatus);
+
+	const onLoginStatusChange = async (loginStatus: boolean) => {
+		if (loginStatus) {
+			let requestList: String[] = [];
+			recipes.forEach((recipe) => {
+				requestList.push( `${apiConfig.recipes.getBookmarks}/${recipe.id}`);
+			});
+
+			const requests = requestList.map((request) => fetch(new URL(request.toString())));
+			const responses = await Promise.all(requests);
+			const promises = responses.map((response) => response.json());
+			const result = await Promise.all(promises);
+
+			result.forEach((result) => {
+				if (result.type === 'success') {
+					// loop through result.data.rows and check if user has liked the recipe
+					for (var likeData of result.data?.rows) {
+						let recipe = recipes.find((r) => r.id === likeData.recipe_id);
+						if (recipe) {
+							if (likeData.user_id === session?.user?.id) {
+								recipe.bookmarked = true;
+								recipe.totalLikes = result.data?.count;
+							}
+						}
+					}
+				}
+			});
+
+			// force re-render
+			recipes = recipes; 
+		} else {
+			recipes.forEach((recipe) => {
+				recipe.bookmarked = false;
+			});
+		}
+	};
+
 	onMount(async () => {
 		if (location.hash.indexOf('#access_token=') > -1) {
 			const token = new URLSearchParams(document.location.hash.slice(1)).get('access_token');
@@ -44,6 +90,8 @@
 			const cleanedUrl = window.location.href.split('#')[0];
 			window.history.replaceState(null, '', cleanedUrl);
 		}
+
+		rendered = true;
 	});
 
 	/** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
@@ -97,7 +145,6 @@
 	const handleRecipes: SubmitFunction = () => {
 		loading = true;
 		return async ({ result }) => {
-			console.log('type', result.type);
 			if (result.type === 'success') {
 				let t: ToastSettings;
 				recipes = result.data?.recipes;
