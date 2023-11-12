@@ -11,50 +11,39 @@
 	import { toastStore } from '@skeletonlabs/skeleton';
 	import { applyAction, deserialize } from '$app/forms';
 	import { error } from '@sveltejs/kit';
+	import { apiConfig } from '$lib/apiConfig';
 
 	let recipes: App.Recipe[] = [];
 	let recipesDetail: App.RecipeDetail[] = [];
 	let searchKeyword: string = '';
 
-	$: ({ supabase, session } = $page.data);
+	$: ({ session } = $page.data);
 	let fetching: boolean = true;
 
 	onMount(async () => {
 		fetching = true;
-		const { data, error } = await supabase
-			.from('favourites')
-			.select('*')
-			.eq('user_id', session?.user?.id);
+		try {
+			const response = await fetch(apiConfig.recipes.getSavedRecipes, {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${session?.token}`
+				}
+			});
 
-		if (error) {
+			const result = await response.json();
+			if (result.type === 'success') {
+				recipes = result.data?.recipes;
+			} else {
+				throw result.data.error;
+			}
+		} catch (error) {
 			return toastStore.trigger({
-				message: `Something went wrong. Please try again later.`,
+				message: error as string,
 				background: 'variant-filled-error'
 			});
+		} finally {
+			fetching = false;
 		}
-
-		const recipeIds = data.map((recipe: any) => recipe.recipe_id);
-		const response = await fetch('', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded'
-			},
-			body: new URLSearchParams({
-				recipeIds: recipeIds
-			})
-		});
-
-		const resData: any = deserialize(await response.text());
-		if (resData.type === 'error' || resData.type === 'failure') {
-			return toastStore.trigger({
-				message: resData.data?.error,
-				background: 'variant-filled-error'
-			});
-		}
-
-		recipes = resData.data?.recipes;
-		recipesDetail = resData?.data?.recipesDetail;
-		fetching = false;
 	});
 
 	const getRecipeDetailById = (id: number) => {

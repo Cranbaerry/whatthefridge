@@ -10,7 +10,7 @@
 	import type { ModalSettings, ModalComponent } from '@skeletonlabs/skeleton';
 	import AuthenticationForm from '$lib/components/AuthenticationForm.svelte';
 	import { page } from '$app/stores';
-	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
+	import { applyAction, enhance } from '$app/forms';
 	import { setContext } from 'svelte';
 
 	import { Toast, toastStore } from '@skeletonlabs/skeleton';
@@ -205,32 +205,6 @@
 							</dl>
 						</svelte:fragment>
 					</AccordionItem>
-					<!-- <AccordionItem open={$drawerStore.meta.recipeEquipments.length}>
-						<svelte:fragment slot="lead"><Icon data={cutlery} /></svelte:fragment>
-						<svelte:fragment slot="summary">Equipment</svelte:fragment>
-						<svelte:fragment slot="content">
-							<dl class="list-dl">
-								{#if $drawerStore.meta.recipeEquipments.length}
-									{#each $drawerStore.meta.recipeEquipments as equipment}
-										<div>
-											<span class="bg-gray-200">
-												<Avatar
-													src="https://spoonacular.com/cdn/equipment_100x100/{equipment.image}"
-													width="w-12"
-												/>
-											</span>
-											<span class="flex-auto">
-												<dt class="font-bold">{equipment.name}</dt>
-											</span>
-											<span>⋮</span>
-										</div>
-									{/each}
-								{:else}
-									<div class="text-left">Whoops, no equipment data recorded.. 😭</div>
-								{/if}
-							</dl>
-						</svelte:fragment>
-					</AccordionItem> -->
 					<AccordionItem open={$drawerStore.meta.recipeInstructions}>
 						<svelte:fragment slot="lead"><Icon data={listOl} /></svelte:fragment>
 						<svelte:fragment slot="summary">Instructions</svelte:fragment>

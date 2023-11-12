@@ -2,7 +2,7 @@
 	import logo from '$lib/assets/wtf.png';
 	import { InputChip, Paginator } from '@skeletonlabs/skeleton';
 	import FoodCard from '$lib/components/FoodCard.svelte';
-	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
+	import { applyAction, enhance } from '$app/forms';
 	import { toastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings } from '@skeletonlabs/skeleton';
 	import Icon from 'svelte-awesome';
@@ -141,41 +141,6 @@
 
 		loading = false;
 	}
-
-	const handleRecipes: SubmitFunction = () => {
-		loading = true;
-		return async ({ result }) => {
-			if (result.type === 'success') {
-				let t: ToastSettings;
-				recipes = result.data?.recipes;
-				if (recipes.length === 0) {
-					t = {
-						message: `Sorry, we couldn't find any recipes with those ingredients.. 😢`,
-						background: 'variant-filled-error'
-					};
-				} else {
-					t = {
-						message: `We have found ${recipes.length} recipes for you to try! 😋`,
-						background: 'variant-filled-tertiary'
-					};
-				}
-
-				await applyAction(result);
-				toastStore.trigger(t);
-			} else if (result.type === 'error') {
-				toastStore.trigger({
-					message: `Something went wrong. Please try again later.`,
-					background: 'variant-filled-error'
-				});
-			} else if (result.type === 'failure') {
-				toastStore.trigger({
-					message: result.data?.error,
-					background: 'variant-filled-error'
-				});
-			}
-			loading = false;
-		};
-	};
 </script>
 
 <div class="container h-full mx-auto py-3 lg:py-10 px-5 flex flex-col justify-center items-center">

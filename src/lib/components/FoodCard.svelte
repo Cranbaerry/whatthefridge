@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	import { error } from '@sveltejs/kit';
 	import Icon from 'svelte-awesome';
 	import heart from 'svelte-awesome/icons/heart';
@@ -6,14 +7,13 @@
 	import { getContext, onMount } from 'svelte';
 	import type { DrawerSettings } from '@skeletonlabs/skeleton';
 	import { drawerStore, toastStore } from '@skeletonlabs/skeleton';
-	import { enhance, type SubmitFunction } from '$app/forms';
 	import { page } from '$app/stores';
 	import { apiConfig } from '$lib/apiConfig';
 	import Lazy from 'svelte-lazy';
+	import { applyAction } from '$app/forms';
 
 	// @ts-ignore
 	const { showModalAuth } = getContext('authentication');
-
 
 	export let recipeDetail: App.RecipeDetail | undefined = undefined;
 
@@ -28,36 +28,6 @@
 	$: ({ recipe, ...restProps } = $$props);
 	$: bouncingHeart = changingFav ? 'animate-bounce' : '';
 	$: fillHeart = recipe.bookmarked ? '!fill-red-500' : '';
-
-	// const setBookmarkState = async () => {
-	// 	try {
-	// 		const response = await fetch(`${apiConfig.recipes.getBookmarkState}/${recipe.id}`, {
-	// 			method: 'GET'
-	// 		});
-
-	// 		const result = await response.json();
-	// 		if (result.type === 'success') {
-	// 			// loop through result.data.rows and check if user has liked the recipe
-	// 			if (session?.user) {
-	// 				for (var likeData of result.data?.rows) {
-	// 					if (likeData.user_id === session?.user?.id) {
-	// 						recipe.bookmarked = true;
-	// 						break;
-	// 					}
-	// 				}
-	// 			}
-
-	// 			recipe.totalLikes = result.data?.count;
-	// 		} else {
-	// 			throw result.data.error;
-	// 		}
-	// 	} catch (error) {
-	// 		toastStore.trigger({
-	// 			message: error as string,
-	// 			background: 'variant-filled-error'
-	// 		});
-	// 	}
-	// };
 
 	const toggleFav = async () => {
 		if (!session?.user) {
@@ -99,55 +69,120 @@
 		return html.replace(/<\/?[^>]+(>|$)/g, '');
 	};
 
-	const handleRecipeDetail: SubmitFunction = ({ cancel }) => {
-		if (recipeDetail) {
-			cancel();
+	/** @param {{ currentTarget: EventTarget & HTMLFormElement}} event */
+	async function handleRecipeDetailV2(event: any) {
+		// if (recipeDetail) {
+		// 	cancel();
+		// 	recipeDetail.summary = stripHtmlTags(recipeDetail.summary);
+		// 	const drawerSettings: DrawerSettings = {
+		// 		id: 'recipe',
+		// 		width: 'w-[280px] md:w-[550px]',
+		// 		meta: {
+		// 			recipeDetail: recipeDetail,
+		// 			recipeEquipments: recipeDetail.equipments,
+		// 			recipeInstructions: recipeDetail.steps
+		// 		}
+		// 	};
+
+		// 	return drawerStore.open(drawerSettings);
+		// }
+
+		loading = true;
+		console.log(event.currentTarget.action);
+		const response = await fetch(event.currentTarget.action, {
+			method: 'GET',
+		});
+
+		// Concern: JSON.parse() isn't enough because form actions - like load functions - also support returning Date or BigInt objects.
+		const result = await response.json();
+
+		if (result.type === 'success') {
+			// Strip HTML tags from summary
+			let recipeDetail = result.data?.recipe;
 			recipeDetail.summary = stripHtmlTags(recipeDetail.summary);
+			console.log(recipeDetail);
+
 			const drawerSettings: DrawerSettings = {
 				id: 'recipe',
 				width: 'w-[280px] md:w-[550px]',
 				meta: {
 					recipeDetail: recipeDetail,
-					recipeEquipments: recipeDetail.equipments,
-					recipeInstructions: recipeDetail.steps
+					recipeEquipments: null,
+					recipeInstructions: result.data?.recipe.analyzedInstructions[0]?.steps ?? []
 				}
 			};
 
-			return drawerStore.open(drawerSettings);
+			drawerStore.open(drawerSettings);
+			await applyAction(result);
+			await invalidateAll();
+		} else if (result.type === 'error') {
+			toastStore.trigger({
+				message: `Something went wrong. Please try again later.`,
+				background: 'variant-filled-error'
+			});
+		} else if (result.type === 'failure') {
+			toastStore.trigger({
+				message: result.data?.error,
+				background: 'variant-filled-error'
+			});
 		}
 
-		loading = true;
-		return async ({ result }) => {
-			if (result.type === 'success') {
-				// Strip HTML tags from summary
-				let recipeDetail = result.data?.detail;
-				recipeDetail.summary = stripHtmlTags(recipeDetail.summary);
+		loading = false;
+	}
 
-				const drawerSettings: DrawerSettings = {
-					id: 'recipe',
-					width: 'w-[280px] md:w-[550px]',
-					meta: {
-						recipeDetail: recipeDetail,
-						recipeEquipments: result.data?.equipments,
-						recipeInstructions: result.data?.instructions
-					}
-				};
-				drawerStore.open(drawerSettings);
-			} else if (result.type === 'error') {
-				toastStore.trigger({
-					message: `Internal Server Error. Please try again later.`,
-					background: 'variant-filled-error'
-				});
-			}
-			loading = false;
-		};
-	};
+	// const handleRecipeDetail: SubmitFunction = ({ cancel }) => {
+	// 	if (recipeDetail) {
+	// 		cancel();
+	// 		recipeDetail.summary = stripHtmlTags(recipeDetail.summary);
+	// 		const drawerSettings: DrawerSettings = {
+	// 			id: 'recipe',
+	// 			width: 'w-[280px] md:w-[550px]',
+	// 			meta: {
+	// 				recipeDetail: recipeDetail,
+	// 				recipeEquipments: recipeDetail.equipments,
+	// 				recipeInstructions: recipeDetail.steps
+	// 			}
+	// 		};
+
+	// 		return drawerStore.open(drawerSettings);
+	// 	}
+
+	// 	loading = true;
+	// 	return async ({ result }) => {
+	// 		if (result.type === 'success') {
+	// 			// Strip HTML tags from summary
+	// 			let recipeDetail = result.data?.detail;
+	// 			recipeDetail.summary = stripHtmlTags(recipeDetail.summary);
+
+	// 			const drawerSettings: DrawerSettings = {
+	// 				id: 'recipe',
+	// 				width: 'w-[280px] md:w-[550px]',
+	// 				meta: {
+	// 					recipeDetail: recipeDetail,
+	// 					recipeEquipments: result.data?.equipments,
+	// 					recipeInstructions: result.data?.instructions
+	// 				}
+	// 			};
+	// 			drawerStore.open(drawerSettings);
+	// 		} else if (result.type === 'error') {
+	// 			toastStore.trigger({
+	// 				message: `Internal Server Error. Please try again later.`,
+	// 				background: 'variant-filled-error'
+	// 			});
+	// 		}
+	// 		loading = false;
+	// 	};
+	// };
 
 	const cardFadeOption = { delay: 0, duration: 700 };
 	// onMount(setBookmarkState);
 </script>
 
-<form action="?/fetchRecipeDetail" method="post" use:enhance={handleRecipeDetail}>
+<form
+	action="{apiConfig.recipes.getDetail}/{recipe.id}"
+	method="post"
+	on:submit|preventDefault={handleRecipeDetailV2}
+>
 	<button class="relative card card-hover overflow-hidden variant-soft w-full" disabled={loading}>
 		<input name="id" type="hidden" value={recipe.id} />
 		<header
